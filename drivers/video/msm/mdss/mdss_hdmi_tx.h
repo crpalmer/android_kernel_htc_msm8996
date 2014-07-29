@@ -197,6 +197,7 @@ struct hdmi_tx_ctrl {
 	struct cec_cbs hdmi_cec_cbs;
 
 	char disp_switch_name[MAX_SWITCH_NAME_SIZE];
+	bool power_data_enable[HDMI_TX_MAX_PM];
 
 	u8 ds_hdcp;
 	struct mutex hpd_mutex;

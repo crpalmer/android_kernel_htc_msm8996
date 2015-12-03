@@ -2965,7 +2965,7 @@ static int __qseecom_allocate_sg_list_buffer(struct qseecom_dev_handle *data,
 	}
 	buf_hdr = (struct qseecom_sg_list_buf_hdr_64bit *)field;
 	memset((void *)buf_hdr, 0, QSEECOM_SG_LIST_BUF_HDR_SZ_64BIT);
-	
+	/* Allocate a contiguous kernel buffer */
 	size = sg_ptr->nents * SG_ENTRY_SZ_64BIT;
 	size = (size + PAGE_SIZE) & PAGE_MASK;
 	buf = dma_alloc_coherent(qseecom.pdev,
@@ -2974,11 +2974,11 @@ static int __qseecom_allocate_sg_list_buffer(struct qseecom_dev_handle *data,
 		pr_err("failed to alloc memory for sg buf\n");
 		return -ENOMEM;
 	}
-	
+	/* update qseecom_sg_list_buf_hdr_64bit */
 	buf_hdr->version = QSEECOM_SG_LIST_BUF_FORMAT_VERSION_2;
 	buf_hdr->new_buf_phys_addr = coh_pmem;
 	buf_hdr->nents_total = sg_ptr->nents;
-	
+	/* save the left sg entries into new allocated buf */
 	sg_entry = (struct qseecom_sg_entry_64bit *)buf;
 	for (i = 0; i < sg_ptr->nents; i++) {
 		sg_entry->phys_addr = (uint64_t)sg_dma_address(sg);

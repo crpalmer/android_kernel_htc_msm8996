@@ -74,7 +74,9 @@ obj-$(CONFIG_MSM_CORE_CTL_HELPER) += core_ctl_helper.o
 obj-$(CONFIG_MSM_SCM_ERRATA) += scm-errata.o
 obj-$(CONFIG_MSM_PFE_WA) += pfe-wa.o
 obj-$(CONFIG_MSM_PERFORMANCE) += msm_performance.o
+obj-$(CONFIG_ARCH_MSM8996) += msm_cpu_voltage.o
 obj-$(CONFIG_FPR_FPC)  += htc_smi.o
+
 ifdef CONFIG_MSM_SUBSYSTEM_RESTART
 	obj-y += subsystem_notif.o
 	obj-y += subsystem_restart.o

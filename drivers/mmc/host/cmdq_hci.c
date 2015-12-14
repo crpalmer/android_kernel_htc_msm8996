@@ -791,6 +791,13 @@ irqreturn_t cmdq_irq(struct mmc_host *mmc, int err)
 		pr_err("%s: err: %d status: 0x%08x task-err-info (0x%08lx)\n",
 		       mmc_hostname(mmc), err, status, err_info);
 
+		/*
+		 * Need to halt CQE in case of error in interrupt context itself
+		 * otherwise CQE may proceed with sending CMD to device even if
+		 * CQE/card is in error state.
+		 * CMDQ error handling will make sure that it is unhalted after
+		 * handling all the errors.
+		 */
 		ret = cmdq_halt_poll(mmc, true);
 		if (ret)
 			pr_err("%s: %s: halt failed ret=%d\n",
@@ -921,6 +928,12 @@ out:
 }
 EXPORT_SYMBOL(cmdq_irq);
 
+/* cmdq_halt_poll - Halting CQE using polling method.
+ * @mmc: struct mmc_host
+ * @halt: bool halt
+ * This is used mainly from interrupt context to halt/unhalt
+ * CQE engine.
+ */
 static int cmdq_halt_poll(struct mmc_host *mmc, bool halt)
 {
 	struct cmdq_host *cq_host = (struct cmdq_host *)mmc_cmdq_private(mmc);

@@ -1259,26 +1259,24 @@ static bool wcd_mbhc_check_for_spl_headset(struct wcd_mbhc *mbhc,
 	u16 hs_comp_res_1_8v = 0, hs_comp_res_2_7v = 0;
 	bool spl_hs = false;
 
-	pr_info("%s: enter\n", __func__); 
-
 	if (!mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic)
 		goto exit;
 
-	
+	/* Read back hs_comp_res @ 1.8v Micbias */
 	WCD_MBHC_REG_READ(WCD_MBHC_HS_COMP_RESULT, hs_comp_res_1_8v);
 	if (!hs_comp_res_1_8v) {
 		spl_hs = false;
 		goto exit;
 	}
 
-	
+	/* Bump up MB2 to 2.7v */
 	mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic(mbhc->codec,
 				mbhc->mbhc_cfg->mbhc_micbias, true);
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_FSM_EN, 0);
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_FSM_EN, 1);
 	usleep_range(10000, 10100);
 
-	
+	/* Read back HS_COMP_RESULT */
 	WCD_MBHC_REG_READ(WCD_MBHC_HS_COMP_RESULT, hs_comp_res_2_7v);
 	if (!hs_comp_res_2_7v && hs_comp_res_1_8v)
 		spl_hs = true;
@@ -1286,8 +1284,8 @@ static bool wcd_mbhc_check_for_spl_headset(struct wcd_mbhc *mbhc,
 	if (spl_hs && spl_hs_cnt)
 		*spl_hs_cnt += 1;
 
-	
-	if (*spl_hs_cnt != WCD_MBHC_SPL_HS_CNT) {
+	/* MB2 back to 1.8v */
+	if (spl_hs_cnt && (*spl_hs_cnt != WCD_MBHC_SPL_HS_CNT)) {
 		mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic(mbhc->codec,
 				mbhc->mbhc_cfg->mbhc_micbias, false);
 		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_FSM_EN, 0);
@@ -1296,9 +1294,7 @@ static bool wcd_mbhc_check_for_spl_headset(struct wcd_mbhc *mbhc,
 	}
 
 	if (spl_hs)
-		pr_info("%s: Detected special HS (%d)\n", __func__, spl_hs); 
-	else
-		pr_info("%s: Not Detected special HS (%d)\n", __func__, spl_hs);
+		pr_debug("%s: Detected special HS (%d)\n", __func__, spl_hs);
 
 exit:
 	return spl_hs;
@@ -1387,7 +1383,8 @@ correct_plug_type:
 					mbhc->hs_detect_work_stop);
 			wcd_enable_curr_micbias(mbhc,
 						WCD_MBHC_EN_NONE);
-			if (mbhc->micbias_enable) {
+			if (mbhc->micbias_enable &&
+			    mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic) {
 				mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic(
 					mbhc->codec, MIC_BIAS_2, false);
 				mbhc->micbias_enable = false;
@@ -1409,7 +1406,8 @@ correct_plug_type:
 					mbhc->hs_detect_work_stop);
 			wcd_enable_curr_micbias(mbhc,
 						WCD_MBHC_EN_NONE);
-			if (mbhc->micbias_enable) {
+			if (mbhc->micbias_enable &&
+			    mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic) {
 				mbhc->mbhc_cb->mbhc_micb_ctrl_thr_mic(
 					mbhc->codec, MIC_BIAS_2, false);
 				mbhc->micbias_enable = false;
@@ -1440,7 +1438,7 @@ correct_plug_type:
 
 		if (mbhc->swap_detect) { 
 			if ((!hs_comp_res) && (!is_pa_on)) {
-				
+				/* Check for cross connection*/
 				ret = wcd_check_cross_conn(mbhc);
 				if (ret < 0) {
 					continue;
@@ -1452,6 +1450,10 @@ correct_plug_type:
 						continue;
 					} else if (pt_gnd_mic_swap_cnt >
 							GND_MIC_SWAP_THRESHOLD) {
+						/*
+						 * This is due to GND/MIC switch didn't
+						 * work,  Report unsupported plug.
+						 */
 						pr_debug("%s: switch didnt work\n",
 							  __func__);
 						plug_type = MBHC_PLUG_TYPE_GND_MIC_SWAP;
@@ -1498,14 +1500,21 @@ correct_plug_type:
 					plug_type); 
 			if (!(plug_type == MBHC_PLUG_TYPE_GND_MIC_SWAP)) {
 				plug_type = MBHC_PLUG_TYPE_HEADSET;
-				if (mbhc->current_plug !=
-						MBHC_PLUG_TYPE_HEADSET &&
-						!mbhc->btn_press_intr) {
-					pr_info("%s: cable is %sheadset\n",
+				/*
+				 * Report headset only if not already reported
+				 * and if there is not button press without
+				 * release
+				 */
+				if (((mbhc->current_plug !=
+				      MBHC_PLUG_TYPE_HEADSET) &&
+				     (mbhc->current_plug !=
+				      MBHC_PLUG_TYPE_ANC_HEADPHONE)) &&
+				    !mbhc->btn_press_intr) {
+					pr_debug("%s: cable is %sheadset\n",
 						__func__,
 						((spl_hs_count ==
 							WCD_MBHC_SPL_HS_CNT) ?
-							"special ":"")); 
+							"special ":""));
 					goto report;
 				}
 			}

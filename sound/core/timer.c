@@ -347,7 +347,7 @@ int snd_timer_close(struct snd_timer_instance *timeri)
 		if (timer && list_empty(&timer->open_list_head) &&
 		    timer->hw.close)
 			timer->hw.close(timer);
-		
+		/* remove slave links */
 		spin_lock_irq(&slave_active_lock);
 		spin_lock(&timer->lock);
 		list_for_each_entry_safe(slave, tmp, &timeri->slave_list_head,

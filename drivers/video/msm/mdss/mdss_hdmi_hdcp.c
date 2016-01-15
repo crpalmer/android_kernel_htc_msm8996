@@ -1379,7 +1379,7 @@ int hdmi_hdcp_reauthenticate(void *input)
 	/* Disable encryption and disable the HDCP block */
 	DSS_REG_W(io, HDMI_HDCP_CTRL, 0);
 
-	
+	/* Restart authentication attempt */
 	DEV_DBG("%s: %s: Scheduling work to start HDCP authentication",
 		__func__, HDCP_STATE_NAME);
 	mutex_lock(hdcp_ctrl->init_data.mutex);

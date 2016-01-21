@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -4329,8 +4329,11 @@ static int afe_sidetone_iir(u16 tx_port_id, u16 rx_port_id, bool enable)
 				__func__, index);
 		return -EINVAL;
 	}
-	if (q6audio_validate_port(rx_port_id) < 0)
+	ret = q6audio_validate_port(rx_port_id);
+	if (ret < 0) {
+		pr_err("%s: Invalid port 0x%x %d", __func__, rx_port_id, ret);
 		return -EINVAL;
+	}
 
 	iir_sidetone.hdr.hdr_field = APR_HDR_FIELD(APR_MSG_TYPE_SEQ_CMD,
 				APR_HDR_LEN(APR_HDR_SIZE), APR_PKT_VER);

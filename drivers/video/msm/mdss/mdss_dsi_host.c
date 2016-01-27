@@ -2848,7 +2848,7 @@ static bool mdss_dsi_fifo_status(struct mdss_dsi_ctrl_pdata *ctrl)
 
 	status = MIPI_INP(base + 0x000c);/* DSI_FIFO_STATUS */
 
-	
+	/* fifo underflow, overflow and empty*/
 	if (status & 0xcccc4409) {
 		MIPI_OUTP(base + 0x000c, status);
 		pr_err("%s: status=%x\n", __func__, status);
@@ -2857,9 +2857,9 @@ static bool mdss_dsi_fifo_status(struct mdss_dsi_ctrl_pdata *ctrl)
 			/* Ignore FIFO EMPTY when overflow happens */
 			status = status & 0xeeeeffff;
 		}
-		if (status & 0x88880000)  
+		if (status & 0x88880000)  /* DLNx_HS_FIFO_UNDERFLOW */
 			dsi_send_events(ctrl, DSI_EV_DLNx_FIFO_UNDERFLOW, 0);
-		if (status & 0x11110000) 
+		if (status & 0x11110000) /* DLN_FIFO_EMPTY */
 			dsi_send_events(ctrl, DSI_EV_DSI_FIFO_EMPTY, 0);
 		ctrl->err_cont.fifo_err_cnt++;
 		ret = true;

@@ -740,9 +740,10 @@ static int functionfs_ready_callback(struct ffs_data *ffs)
 	struct functionfs_config *config = ffs_function.config;
 	int ret = 0;	
 
-	if (dev)
-		mutex_lock(&dev->mutex);
+	if (!dev)
+		return -ENODEV;
 
+	mutex_lock(&dev->mutex);
 	config->data = ffs;
 	config->opened = true;
 
@@ -764,9 +765,7 @@ static int functionfs_ready_callback(struct ffs_data *ffs)
 		}
 	}
 
-	if (dev)
-		mutex_unlock(&dev->mutex);
-
+	mutex_unlock(&dev->mutex);
 	return 0;
 }
 

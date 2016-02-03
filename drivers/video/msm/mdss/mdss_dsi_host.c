@@ -520,6 +520,15 @@ void mdss_dsi_sw_reset(struct mdss_dsi_ctrl_pdata *ctrl, bool restore)
 	spin_unlock_irqrestore(&ctrl->mdp_lock, flag);
 }
 
+/**
+ * mdss_dsi_wait_for_lane_idle() - Wait for DSI lanes to be idle
+ * @ctrl: pointer to DSI controller structure
+ *
+ * This function waits for all the active DSI lanes to be idle by polling all
+ * the *FIFO_EMPTY bits and polling the lane status to ensure that all the lanes
+ * are in stop state. This function assumes that the bus clocks required to
+ * access the registers are already turned on.
+ */
 int mdss_dsi_wait_for_lane_idle(struct mdss_dsi_ctrl_pdata *ctrl)
 {
 	int rc;

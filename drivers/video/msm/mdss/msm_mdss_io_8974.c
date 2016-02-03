@@ -1621,6 +1621,16 @@ static int mdss_dsi_ulps_config(struct mdss_dsi_ctrl_pdata *ctrl,
 		active_lanes, ctrl->mmss_clamp ? "enabled" : "disabled");
 
 	if (enable && !ctrl->ulps) {
+		/*
+		 * Ensure that the lanes are idle prior to placing a ULPS entry
+		 * request. This is needed to ensure that there is no overlap
+		 * between any HS or LP commands being sent out on the lane and
+		 * a potential ULPS entry request.
+		 *
+		 * This check needs to be avoided when we are resuming from idle
+		 * power collapse and just restoring the controller state to
+		 * ULPS with the clamps still in place.
+		 */
 		if (!ctrl->mmss_clamp) {
 			ret = mdss_dsi_wait_for_lane_idle(ctrl);
 			if (ret) {
@@ -1631,6 +1641,11 @@ static int mdss_dsi_ulps_config(struct mdss_dsi_ctrl_pdata *ctrl,
 			}
 		}
 
+		/*
+		 * ULPS Entry Request.
+		 * Wait for a short duration to ensure that the lanes
+		 * enter ULP state.
+		 */
 		MIPI_OUTP(ctrl->ctrl_base + 0x0AC, active_lanes);
 		usleep_range(100, 100);
 

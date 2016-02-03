@@ -1518,12 +1518,26 @@ static bool mdss_dsi_is_ulps_req_valid(struct mdss_dsi_ctrl_pdata *ctrl,
 		return false;
 	}
 
+	/*
+	 * No need to enter ULPS when transitioning from splash screen to
+	 * boot animation since it is expected that the clocks would be turned
+	 * right back on.
+	 */
 	if (enable && pinfo->cont_splash_enabled) {
 		pr_debug("%s: skip ULPS config with splash screen enabled\n",
 			__func__);
 		return false;
 	}
 
+	/*
+	 * No need to enable ULPS if panel is not yet initialized.
+	 * However, this should be allowed in following usecases:
+	 *   1. If ULPS during suspend feature is enabled, where we
+	 *      configure the lanes in ULPS after turning off the panel.
+	 *   2. When coming out of idle PC with clamps enabled, where we
+	 *      transition the controller HW state back to ULPS prior to
+	 *      disabling ULPS.
+	 */
 	if (enable && !ctrl->mmss_clamp &&
 		!(ctrl->ctrl_state & CTRL_STATE_PANEL_INIT) &&
 		!pdata->panel_info.ulps_suspend_enabled) {
@@ -1531,6 +1545,10 @@ static bool mdss_dsi_is_ulps_req_valid(struct mdss_dsi_ctrl_pdata *ctrl,
 		return false;
 	}
 
+	/*
+	 * For split-DSI usecase, wait till both controllers are initialized.
+	 * The same exceptions as above are applicable here too.
+	 */
 	if (mdss_dsi_is_hw_config_split(ctrl->shared_data)) {
 		octrl = mdss_dsi_get_other_ctrl(ctrl);
 		if (enable && !ctrl->mmss_clamp && octrl &&
@@ -1545,6 +1563,15 @@ static bool mdss_dsi_is_ulps_req_valid(struct mdss_dsi_ctrl_pdata *ctrl,
 	return true;
 }
 
+/**
+ * mdss_dsi_ulps_config() - Program DSI lanes to enter/exit ULPS mode
+ * @ctrl: pointer to DSI controller structure
+ * @enable: 1 to enter ULPS, 0 to exit ULPS
+ *
+ * This function executes the necessary programming sequence to enter/exit
+ * DSI Ultra-Low Power State (ULPS). This function assumes that the link and
+ * core clocks are already on.
+ */
 static int mdss_dsi_ulps_config(struct mdss_dsi_ctrl_pdata *ctrl,
 	int enable)
 {
@@ -1941,7 +1968,6 @@ int mdss_dsi_pre_clkoff_cb(void *priv,
 	}
 
 	if ((clk & MDSS_DSI_CORE_CLK) && (new_state == MDSS_DSI_CLK_OFF)) {
-
 		/*
 		 * Enable DSI clamps only if entering idle power collapse or
 		 * when ULPS during suspend is enabled.
@@ -1953,6 +1979,10 @@ int mdss_dsi_pre_clkoff_cb(void *priv,
 				pr_err("%s: Failed to enable dsi clamps. rc=%d\n",
 					__func__, rc);
 		} else {
+			/*
+			* Make sure that controller is not in ULPS state when
+			* the DSI link is not active.
+			*/
 			rc = mdss_dsi_ulps_config(ctrl, 0);
 			if (rc)
 				pr_err("%s: failed to disable ulps. rc=%d\n",

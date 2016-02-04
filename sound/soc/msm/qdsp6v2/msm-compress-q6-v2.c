@@ -645,6 +645,10 @@ static void compr_event_handler(uint32_t opcode,
 		pr_err("%s: Received reset events CB, move to error state",
 			__func__);
 		spin_lock_irqsave(&prtd->lock, flags);
+		/*
+		 * Since ADSP is down, let this driver pretend that it copied
+		 * all the bytes received, so that next write will be triggered
+		 */
 		prtd->copied_total = prtd->bytes_received;
 		snd_compr_fragment_elapsed(cstream);
 		atomic_set(&prtd->error, 1);

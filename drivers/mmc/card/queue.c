@@ -86,6 +86,16 @@ static inline void mmc_cmdq_ready_wait(struct mmc_host *host,
 	struct mmc_cmdq_context_info *ctx = &host->cmdq_ctx;
 	struct request_queue *q = mq->queue;
 
+	/*
+	 * Wait until all of the following conditions are true:
+	 * 1. There is a request pending in the block layer queue
+	 *    to be processed.
+	 * 2. If the peeked request is flush/discard then there shouldn't
+	 *    be any other direct command active.
+	 * 3. cmdq state should be unhalted.
+	 * 4. cmdq state shouldn't be in error state.
+	 * 5. free tag available to process the new request.
+	 */
 	wait_event(ctx->wait, kthread_should_stop()
 		|| (mmc_peek_request(mq) &&
 		!((mq->cmdq_req_peeked->cmd_flags & (REQ_FLUSH | REQ_DISCARD))
@@ -741,6 +751,13 @@ int mmc_queue_suspend(struct mmc_queue *mq, int wait)
 
 		if (wait) {
 
+			/*
+			 * After blk_stop_queue is called, wait for all
+			 * active_reqs to complete.
+			 * Then wait for cmdq thread to exit before calling
+			 * cmdq shutdown to avoid race between issuing
+			 * requests and shutdown of cmdq.
+			 */
 			spin_lock_irqsave(q->queue_lock, flags);
 			blk_stop_queue(q);
 			spin_unlock_irqrestore(q->queue_lock, flags);

@@ -2941,7 +2941,7 @@ void mdss_dsi_error(struct mdss_dsi_ctrl_pdata *ctrl)
 	u32 intr, mask;
 	bool err_handled = false;
 
-	
+	/* Ignore the interrupt if the error intr mask is not set */
 	mask = MIPI_INP(ctrl->ctrl_base + 0x0110);
 	if (!(mask & DSI_INTR_ERROR_MASK)) {
 		pr_debug("%s: Ignore interrupt as error mask not set, 0x%x\n",

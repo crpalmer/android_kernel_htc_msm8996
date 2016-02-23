@@ -540,7 +540,8 @@ struct mdss_dsi_ctrl_pdata {
 	bool timing_db_mode;
 	bool update_phy_timing; /* flag to recalculate PHY timings */
 
-	
+	bool phy_power_off;
+
 	struct dsi_panel_cmds cabc_off_cmds;
 	struct dsi_panel_cmds cabc_ui_cmds;
 	struct dsi_panel_cmds cabc_video_cmds;

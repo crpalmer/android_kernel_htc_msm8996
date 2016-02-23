@@ -38,6 +38,10 @@
 
 #define RCG_FORCE_DISABLE_DELAY_US	100
 
+/*
+ * When updating an RCG configuration, check the update bit up to this number
+ * number of times (with a 1 us delay in between) before continuing.
+ */
 #define UPDATE_CHECK_MAX_LOOPS	500
 
 DEFINE_SPINLOCK(local_clock_reg_lock);
@@ -103,14 +107,18 @@ struct div_map {
  */
 static void rcg_update_config(struct rcg_clk *rcg)
 {
-	u32 cmd_rcgr_regval, count;
+	u32 cmd_rcgr_regval;
+	int count = UPDATE_CHECK_MAX_LOOPS;
+
+	if (rcg->non_local_control_timeout)
+		count = rcg->non_local_control_timeout;
 
 	cmd_rcgr_regval = readl_relaxed(CMD_RCGR_REG(rcg));
 	cmd_rcgr_regval |= CMD_RCGR_CONFIG_UPDATE_BIT;
 	writel_relaxed(cmd_rcgr_regval, CMD_RCGR_REG(rcg));
 
 	/* Wait for update to take effect */
-	for (count = UPDATE_CHECK_MAX_LOOPS; count > 0; count--) {
+	for (; count > 0; count--) {
 		if (!(readl_relaxed(CMD_RCGR_REG(rcg)) &
 				CMD_RCGR_CONFIG_UPDATE_BIT))
 			return;
@@ -122,10 +130,13 @@ static void rcg_update_config(struct rcg_clk *rcg)
 
 static void rcg_on_check(struct rcg_clk *rcg)
 {
-	int count;
+	int count = UPDATE_CHECK_MAX_LOOPS;
+
+	if (rcg->non_local_control_timeout)
+		count = rcg->non_local_control_timeout;
 
 	/* Wait for RCG to turn on */
-	for (count = UPDATE_CHECK_MAX_LOOPS; count > 0; count--) {
+	for (; count > 0; count--) {
 		if (!(readl_relaxed(CMD_RCGR_REG(rcg)) &
 				CMD_RCGR_ROOT_STATUS_BIT))
 			return;
@@ -209,7 +220,7 @@ static void rcg_clear_force_enable(struct rcg_clk *rcg)
 	cmd_rcgr_regval &= ~CMD_RCGR_ROOT_ENABLE_BIT;
 	writel_relaxed(cmd_rcgr_regval, CMD_RCGR_REG(rcg));
 	spin_unlock_irqrestore(&local_clock_reg_lock, flags);
-	
+	/* Add a delay of 100usecs to let the RCG disable */
 	udelay(RCG_FORCE_DISABLE_DELAY_US);
 }
 
@@ -291,14 +302,20 @@ static int rcg_clk_set_rate(struct clk *c, unsigned long rate)
 
 	BUG_ON(!rcg->set_rate);
 
-	
-	if ((rcg->non_local_children && c->count) || rcg->non_local_control) {
+	/* Perform clock-specific frequency switch operations. */
+	if ((rcg->non_local_children && c->count) ||
+			rcg->non_local_control_timeout) {
+		/*
+		 * Force enable the RCG here since the clock could be disabled
+		 * between pre_reparent and set_rate.
+		 */
 		rcg_set_force_enable(rcg);
 		rcg->set_rate(rcg, nf);
 		rcg_clear_force_enable(rcg);
 	} else if (!rcg->non_local_children) {
 		rcg->set_rate(rcg, nf);
 	}
+
 	/*
 	 * If non_local_children is set and the RCG is not enabled,
 	 * the following operations switch parent in software and cache

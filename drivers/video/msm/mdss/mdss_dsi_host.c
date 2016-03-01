@@ -2961,13 +2961,13 @@ void mdss_dsi_error(struct mdss_dsi_ctrl_pdata *ctrl)
 	/* disable dsi error interrupt */
 	mdss_dsi_err_intr_ctrl(ctrl, DSI_INTR_ERROR_MASK, 0);
 
-	
-	err_handled |= mdss_dsi_clk_status(ctrl);       
-	err_handled |= mdss_dsi_fifo_status(ctrl);      
-	err_handled |= mdss_dsi_ack_err_status(ctrl);   
-	err_handled |= mdss_dsi_timeout_status(ctrl);   
-	err_handled |= mdss_dsi_status(ctrl);           
-	err_handled |= mdss_dsi_dln0_phy_err(ctrl, true);
+	/* DSI_ERR_INT_MASK0 */
+	err_handled |= mdss_dsi_clk_status(ctrl);	/* Mask0, 0x10000000 */
+	err_handled |= mdss_dsi_fifo_status(ctrl);	/* mask0, 0x133d00 */
+	err_handled |= mdss_dsi_ack_err_status(ctrl);	/* mask0, 0x01f */
+	err_handled |= mdss_dsi_timeout_status(ctrl);	/* mask0, 0x0e0 */
+	err_handled |= mdss_dsi_status(ctrl);		/* mask0, 0xc0100 */
+	err_handled |= mdss_dsi_dln0_phy_err(ctrl, true);/* mask0, 0x3e00000 */
 
 	/* clear dsi error interrupt */
 	intr = MIPI_INP(ctrl->ctrl_base + 0x0110);

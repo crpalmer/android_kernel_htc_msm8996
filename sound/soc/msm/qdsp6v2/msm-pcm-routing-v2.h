@@ -411,8 +411,11 @@ void msm_pcm_routing_release_lock(void);
 
 void msm_pcm_routing_reg_stream_app_type_cfg(int fedai_id, int app_type,
 					int acdb_dev_id, int sample_rate);
+int msm_pcm_routing_get_stream_app_type_cfg(int fedai_id, int *app_type,
+					int *acdb_dev_id, int *sample_rate);
+
 int htc_adm_effect_control(enum HTC_ADM_EFFECT_ID effect_id, u16 port_id, uint32_t copp_id,
 					uint32_t payload_size, void *payload);
 ushort get_adm_custom_effect_status(void);
 
-#endif 
+#endif /*_MSM_PCM_H*/

@@ -2474,7 +2474,7 @@ int mdss_dsi_cmdlist_commit(struct mdss_dsi_ctrl_pdata *ctrl, int from_mdp)
 	if (req && (req->flags & CMD_REQ_HS_MODE))
 		hs_req = true;
 	if ((!ctrl->burst_mode_enabled) || from_mdp) {
-		
+		/* make sure dsi_cmd_mdp is idle */
 		mdss_dsi_cmd_mdp_busy(ctrl);
 	}
 

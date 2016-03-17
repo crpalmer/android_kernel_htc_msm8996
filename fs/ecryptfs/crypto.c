@@ -481,11 +481,13 @@ static void init_ecryption_parameters(bool *hw_crypt, bool *cipher_supported,
 		*cipher_supported =
 			get_events()->is_cipher_supported_cb(crypt_stat);
 		if (*cipher_supported) {
+
 			/**
 			 * we should apply external algorythm
 			 * assume that is_hw_crypt() cbck is supplied
 			 */
-			*hw_crypt = get_events()->is_hw_crypt_cb();
+			if (get_events()->is_hw_crypt_cb)
+				*hw_crypt = get_events()->is_hw_crypt_cb();
 		}
 	}
 }

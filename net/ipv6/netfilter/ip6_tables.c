@@ -193,6 +193,8 @@ get_entry(const void *base, unsigned int offset)
 	return (struct ip6t_entry *)(base + offset);
 }
 
+/* All zeroes == unconditional rule. */
+/* Mildly perf critical (only if packet tracing is on) */
 static inline bool unconditional(const struct ip6t_entry *e)
 {
 	static const struct ip6t_ip6 uncond;
@@ -258,7 +260,7 @@ get_chainname_rulenum(const struct ip6t_entry *s, const struct ip6t_entry *e,
 		    strcmp(t->target.u.kernel.target->name,
 			   XT_STANDARD_TARGET) == 0 &&
 		    t->verdict < 0) {
-			
+			/* Tail of chains: STANDARD target (return/policy) */
 			*comment = *chainname == hookname
 				? comments[NF_IP6_TRACE_COMMENT_POLICY]
 				: comments[NF_IP6_TRACE_COMMENT_RETURN];
@@ -479,7 +481,7 @@ mark_source_chains(const struct xt_table_info *newinfo,
 			}
 			e->comefrom |= ((1 << hook) | (1 << NF_INET_NUMHOOKS));
 
-			
+			/* Unconditional return/END. */
 			if ((unconditional(e) &&
 			     (strcmp(t->target.u.user.name,
 				     XT_STANDARD_TARGET) == 0) &&

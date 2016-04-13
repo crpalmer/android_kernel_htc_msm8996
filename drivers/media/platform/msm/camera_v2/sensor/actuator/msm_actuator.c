@@ -1080,7 +1080,7 @@ static int32_t msm_actuator_init_step_table(struct msm_actuator_ctrl_t *a_ctrl,
 	uint16_t data_size = set_info->actuator_params.data_size;
 	CDBG("Enter\n");
 
-	
+	/* validate the actuator state */
 	if (a_ctrl->actuator_state != ACT_OPS_ACTIVE) {
 		pr_err("%s:%d invalid actuator_state %d\n"
 			, __func__, __LINE__, a_ctrl->actuator_state);
@@ -1091,7 +1091,7 @@ static int32_t msm_actuator_init_step_table(struct msm_actuator_ctrl_t *a_ctrl,
 
 	a_ctrl->max_code_size = max_code_size;
 
-	
+	/* free the step_position_table to allocate a new one */
 	kfree(a_ctrl->step_position_table);
 	a_ctrl->step_position_table = NULL;
 

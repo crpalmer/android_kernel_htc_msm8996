@@ -719,6 +719,7 @@ struct mdss_overlay_private {
 	u32 bl_events;
 	u32 ad_events;
 	u32 ad_bl_events;
+	bool allow_kickoff;
 
 	void *splash_mem_vaddr;
 	dma_addr_t splash_mem_dma;

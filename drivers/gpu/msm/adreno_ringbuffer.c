@@ -143,6 +143,29 @@ int adreno_ringbuffer_submit_spin(struct adreno_ringbuffer *rb,
 	return adreno_spin_idle(adreno_dev, timeout);
 }
 
+int adreno_ringbuffer_submit_spin_retry(struct adreno_ringbuffer *rb,
+		struct adreno_submit_time *time, unsigned int timeout,
+		unsigned int retry)
+{
+	int ret = 0;
+	int num_trial = 0;
+	struct adreno_device *adreno_dev = ADRENO_RB_DEVICE(rb);
+
+	adreno_ringbuffer_submit(rb, NULL);
+	do {
+		ret = adreno_spin_idle(adreno_dev, timeout);
+		if (ret == -ETIMEDOUT) {
+			KGSL_DRV_ERR(KGSL_DEVICE(adreno_dev),
+					"hw initialization failed to idle after %d msec\n",
+					(++num_trial)*timeout);
+		}
+		else
+			break;
+	} while (num_trial < retry);
+
+	return ret;
+}
+
 static int
 adreno_ringbuffer_waitspace(struct adreno_ringbuffer *rb,
 				unsigned int numcmds, int wptr_ahead)

@@ -2296,7 +2296,7 @@ static void a5xx_post_start(struct adreno_device *adreno_dev)
 	if (cmds == start)
 		return;
 
-	if (adreno_ringbuffer_submit_spin(rb, NULL, 2000)) {
+	if (adreno_ringbuffer_submit_spin_retry(rb, NULL, 2000, 10)) {
 		struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
 
 		KGSL_DRV_ERR(device, "hw initialization failed to idle\n");

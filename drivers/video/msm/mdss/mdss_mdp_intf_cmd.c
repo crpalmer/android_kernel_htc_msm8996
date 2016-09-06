@@ -2892,6 +2892,11 @@ int mdss_mdp_cmd_stop(struct mdss_mdp_ctl *ctl, int panel_power_state)
 				(void *)&ctx->intf_recovery,
 				CTL_INTF_EVENT_FLAG_DEFAULT);
 			ctx->intf_stopped = 0;
+			/*
+			 * Tearcheck was disabled while entering LP2 state.
+			 * Enable it back to allow updates in LP1 state.
+			 */
+			mdss_mdp_tearcheck_enable(ctl, true);
 			goto end;
 		}
 	}

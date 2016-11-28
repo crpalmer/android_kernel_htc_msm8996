@@ -48,9 +48,6 @@
 #include "lpm-levels.h"
 #include "lpm-workarounds.h"
 #include <trace/events/power.h>
-#ifdef CONFIG_HTC_DEBUG_FOOTPRINT
-#include <htc_mnemosyne/htc_footprint.h>
-#endif
 #define CREATE_TRACE_POINTS
 #include <trace/events/trace_msm_low_power.h>
 #include "../../drivers/clk/msm/clock.h"
@@ -63,13 +60,8 @@ extern int htc_vregs_dump(char *vreg_buffer, int curr_len);
 
 #endif
 
-#if defined(CONFIG_HTC_DEBUG_WATCHDOG)
-extern int msm_watchdog_suspend_deferred(void);
-extern int msm_watchdog_resume_deferred(void);
-#else
 static inline int msm_watchdog_suspend_deferred(void) { return 0; }
 static inline int msm_watchdog_resume_deferred(void) { return 0; }
-#endif
 
 #define SCLK_HZ (32768)
 #define SCM_HANDOFF_LOCK_ID "S:7"
@@ -909,14 +901,8 @@ EXPORT_SYMBOL(free_pmic_reg_buffer);
 #endif
 
 #if !defined(CONFIG_CPU_V7)
-#ifdef CONFIG_HTC_DEBUG_FOOTPRINT
-bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle, bool notify_rpm)
-{
-	int cpu;
-#else
 bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 {
-#endif
 
 #ifdef CONFIG_HTC_POWER_DEBUG
 	 int curr_len = 0;
@@ -953,11 +939,6 @@ bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 		update_debug_pc_event(CPU_ENTER, state_id,
 						0xdeaffeed, 0xdeaffeed, true);
 		stop_critical_timings();
-#ifdef CONFIG_HTC_DEBUG_FOOTPRINT
-		cpu = smp_processor_id();
-		init_cpu_foot_print(cpu, from_idle, notify_rpm);
-		set_cpu_foot_print(cpu, 0x0);
-#endif
 
 #ifdef CONFIG_HTC_POWER_DEBUG
 		if(!from_idle) {
@@ -1016,13 +997,6 @@ bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 		}
 #endif
 
-#ifdef CONFIG_HTC_DEBUG_FOOTPRINT
-		if (success == true) {
-			set_cpu_foot_print(cpu, 0xb);
-			inc_kernel_exit_counter_from_pc(cpu);
-		} else
-			set_cpu_foot_print(cpu, 0xfa);
-#endif
 		start_critical_timings();
 		update_debug_pc_event(CPU_EXIT, state_id,
 						success, 0xdeaffeed, true);
@@ -1079,17 +1053,11 @@ static int lpm_cpuidle_enter(struct cpuidle_device *dev,
 		struct cpuidle_driver *drv, int idx)
 {
 	struct lpm_cluster *cluster = per_cpu(cpu_cluster, dev->cpu);
-#ifdef CONFIG_HTC_DEBUG_FOOTPRINT
-	struct lpm_cpu_level *level;
-#endif
 	bool success = true;
 	const struct cpumask *cpumask = get_cpu_mask(dev->cpu);
 	int64_t start_time = ktime_to_ns(ktime_get()), end_time;
 	struct power_params *pwr_params;
 
-#ifdef CONFIG_HTC_DEBUG_FOOTPRINT
-	level = &cluster->cpu->levels[idx];
-#endif
 	pwr_params = &cluster->cpu->levels[idx].pwr;
 	sched_set_cpu_cstate(smp_processor_id(), idx + 1,
 		pwr_params->energy_overhead, pwr_params->latency_us);
@@ -1114,14 +1082,7 @@ static int lpm_cpuidle_enter(struct cpuidle_device *dev,
 			update_debug_pc_event(CPU_EXIT, idx, success,
 							0xdeaffeed, true);
 	} else {
-#ifdef CONFIG_HTC_DEBUG_FOOTPRINT
-		if (level->mode == MSM_PM_SLEEP_MODE_POWER_COLLAPSE)
-			success = psci_enter_sleep(cluster, idx, true, true);
-		else
-			success = psci_enter_sleep(cluster, idx, true, false);
-#else
 		success = psci_enter_sleep(cluster, idx, true);
-#endif
 	}
 
 exit:
@@ -1369,11 +1330,7 @@ static int lpm_suspend_enter(suspend_state_t state)
 	if (!use_psci)
 		msm_cpu_pm_enter_sleep(cluster->cpu->levels[idx].mode, false);
 	else
-#ifdef CONFIG_HTC_DEBUG_FOOTPRINT
-		psci_enter_sleep(cluster, idx, false, true);
-#else
 		psci_enter_sleep(cluster, idx, false);
-#endif
 	if (idx > 0)
 		update_debug_pc_event(CPU_EXIT, idx, true, 0xdeaffeed,
 					false);

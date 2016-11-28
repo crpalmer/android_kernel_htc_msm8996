@@ -814,6 +814,9 @@ unlock_and_return:
 #if !defined(CONFIG_CPU_V7)
 bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 {
+	/*
+	 * idx = 0 is the default LPM state
+	 */
 	if (!idx) {
 		htc_lpm_pre_action(from_idle);
 		stop_critical_timings();

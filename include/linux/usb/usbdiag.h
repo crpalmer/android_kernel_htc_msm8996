@@ -125,8 +125,8 @@ int usb_diag_write(struct usb_diag_ch *ch, struct diag_request *d_req)
 	return -ENODEV;
 }
 
-#endif 
+#endif /* CONFIG_USB_G_ANDROID */
 int checkcmd_modem_epst(unsigned char *buf);
 int modem_to_userspace(void *buf, int r, int cmdtype, int is9k);
 extern int diag_initialized;
-#endif 
+#endif /* _DRIVERS_USB_DIAG_H_ */

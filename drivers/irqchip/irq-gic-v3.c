@@ -366,7 +366,7 @@ static void gic_show_resume_irq(struct gic_chip_data *gic)
 #ifdef CONFIG_HTC_POWER_DEBUG
 		pr_info("[WAKEUP] Resume caused by gic-%d\n",i);
 #else
-		pr_warning("%s: %d triggered %s\n", __func__, i);
+		pr_warning("%s: %d triggered %%s\n", __func__, i);
 #endif
 	}
 }

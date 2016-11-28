@@ -274,7 +274,7 @@ static void socket_flow_cntl(struct sock *sk_ptr)
 
 	atomic_inc(&info->flow_cnt);
 	DIAG_LOG(DIAG_DEBUG_PERIPHERALS, "%s flow controlled\n", info->name);
-	DIAGFWD_DBUG("diag: In %s, channel %s flow controlled\n",
+	pr_debug("diag: In %s, channel %s flow controlled\n",
 		 __func__, info->name);
 }
 
@@ -329,13 +329,13 @@ static void __socket_open_channel(struct diag_socket_info *info)
 		return;
 
 	if (!info->inited) {
-		DIAGFWD_DBUG("diag: In %s, socket %s is not initialized\n",
+		pr_debug("diag: In %s, socket %s is not initialized\n",
 			 __func__, info->name);
 		return;
 	}
 
 	if (atomic_read(&info->opened)) {
-		DIAGFWD_DBUG("diag: In %s, socket %s already opened\n",
+		pr_debug("diag: In %s, socket %s already opened\n",
 			 __func__, info->name);
 		return;
 	}
@@ -419,7 +419,7 @@ static void socket_init_work_fn(struct work_struct *work)
 		return;
 
 	if (!info->inited) {
-		DIAGFWD_DBUG("diag: In %s, socket %s is not initialized\n",
+		pr_debug("diag: In %s, socket %s is not initialized\n",
 			 __func__, info->name);
 		return;
 	}
@@ -445,10 +445,6 @@ static void __socket_close_channel(struct diag_socket_info *info)
 
 	if (!atomic_read(&info->opened))
 		return;
-
-	if (cntl_socket)
-		wake_up(&cntl_socket->read_wait_q);
-	wake_up(&info->read_wait_q);
 
 	memset(&info->remote_addr, 0, sizeof(struct sockaddr_msm_ipc));
 	diagfwd_channel_close(info->fwd_ctxt);
@@ -601,7 +597,7 @@ static void cntl_socket_read_work_fn(struct work_struct *work)
 		ret = kernel_recvmsg(cntl_socket->hdl, &read_msg, &iov, 1,
 				     sizeof(msg), MSG_DONTWAIT);
 		if (ret < 0) {
-			DIAGFWD_DBUG("diag: In %s, Error recving data %d\n",
+			pr_debug("diag: In %s, Error recving data %d\n",
 				 __func__, ret);
 			break;
 		}

@@ -14,6 +14,7 @@
 #define DIAGIPCLOG_H
 
 #include <linux/ipc_logging.h>
+#include <linux/usb/usbdiag.h>	/* 2015/07/15, USB Team, PCN00017 */
 
 #define DIAG_IPC_LOG_PAGES	50
 

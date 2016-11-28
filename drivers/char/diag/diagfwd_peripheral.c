@@ -30,6 +30,9 @@
 #include "diagfwd_socket.h"
 #include "diag_mux.h"
 #include "diag_ipc_logging.h"
+#include <linux/htc_flags.h>
+
+int diag_initialized;
 
 struct data_header {
 	uint8_t control_char;
@@ -219,6 +222,8 @@ static void diagfwd_data_read_done(struct diagfwd_info *fwd_info,
 	int write_len = 0;
 	unsigned char *write_buf = NULL;
 	struct diagfwd_buf_t *temp_buf = NULL;
+	int ret = 0;
+
 	struct diag_md_session_t *session_info = NULL;
 	uint8_t hdlc_disabled = 0;
 	if (!fwd_info || !buf || len <= 0) {
@@ -304,6 +309,21 @@ static void diagfwd_data_read_done(struct diagfwd_info *fwd_info,
 			pr_err("diag: error in adding hdlc encoding\n");
 			goto end;
 		}
+	}
+	if (fwd_info->peripheral == PERIPHERAL_MODEM) {
+		DIAGFWD_7K_RAWDATA(buf, "modem", DIAG_DBG_READ);
+#if DIAG_XPST && !defined(CONFIG_DIAGFWD_BRIDGE_CODE)
+		ret = checkcmd_modem_epst(buf);
+		if (ret) {
+			modem_to_userspace(buf, len, ret, 0);
+			
+			if (!(get_radio_ex2_flag() & 0x80000000))
+				goto end;
+			
+		}
+	
+	
+#endif
 	}
 
 	if (write_len > 0) {
@@ -818,6 +838,9 @@ int diagfwd_channel_open(struct diagfwd_info *fwd_info)
 			fwd_info->p_ops->open(fwd_info->ctxt);
 	}
 
+	if (fwd_info->peripheral == PERIPHERAL_MODEM)
+		diag_initialized = 1;
+
 	return 0;
 }
 
@@ -838,6 +861,8 @@ int diagfwd_channel_close(struct diagfwd_info *fwd_info)
 	DIAG_LOG(DIAG_DEBUG_PERIPHERALS, "p: %d t: %d considered closed\n",
 		 fwd_info->peripheral, fwd_info->type);
 
+	if (fwd_info->peripheral == PERIPHERAL_MODEM)
+		diag_initialized = 0;
 	return 0;
 }
 

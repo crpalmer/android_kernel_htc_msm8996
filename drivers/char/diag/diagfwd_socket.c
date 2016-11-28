@@ -446,6 +446,10 @@ static void __socket_close_channel(struct diag_socket_info *info)
 	if (!atomic_read(&info->opened))
 		return;
 
+	if (cntl_socket)
+		wake_up(&cntl_socket->read_wait_q);
+	wake_up(&info->read_wait_q);
+
 	memset(&info->remote_addr, 0, sizeof(struct sockaddr_msm_ipc));
 	diagfwd_channel_close(info->fwd_ctxt);
 

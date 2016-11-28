@@ -142,9 +142,13 @@ int diag_mux_switch_logging(int new_mode)
 
 	switch (new_mode) {
 	case DIAG_USB_MODE:
+		driver->qxdm2sd_drop = 1;	/*++ 2015/02/02, USB Team, PCN00002 ++*/
+
 		new_logger = &usb_logger;
 		break;
 	case DIAG_MEMORY_DEVICE_MODE:
+		driver->qxdm2sd_drop = 0;	/*++ 2015/02/02, USB Team, PCN00002 ++*/
+
 		new_logger = &md_logger;
 		break;
 	default:

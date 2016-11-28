@@ -28,9 +28,6 @@
 #include <linux/debugfs.h>
 #include <linux/kmemleak.h>
 
-#define DIAG_INFO(fmt, args...) \
-	printk(KERN_INFO "[USBDIAG] " fmt, ## args)
-
 #if DIAG_XPST
 #include <linux/miscdevice.h>
 #include <linux/sched.h>

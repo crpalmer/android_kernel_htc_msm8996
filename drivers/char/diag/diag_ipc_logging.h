@@ -40,10 +40,7 @@ extern void *diag_ipc_log;
 		}							\
 	} while (0)
 #else
-/*++ 2015/07/15, USB Team, PCN00017 ++*/
-#define DIAG_LOG(log_lvl, msg, ...)	\
-	DIAGFWD_DBUG("[DIAG] %s(): " msg, __func__, ##__VA_ARGS__)
-/*-- 2015/07/15, USB Team, PCN00017 --*/
+#define DIAG_LOG(log_lvl, msg, ...)
 #endif
 
 #endif

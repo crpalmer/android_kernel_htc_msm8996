@@ -27,6 +27,20 @@ static  struct diag_context *qscctxt;
 int htc_usb_enable_function(char *name, int ebl);
 static struct switch_dev sw_htc_usb_diag;
 
+#define DIAG_WARNING(fmt, args...) \
+	printk(KERN_WARNING "[USBDIAG] " fmt, ## args)
+
+#define DIAG_INFO(fmt, args...) \
+	printk(KERN_INFO "[USBDIAG] " fmt, ## args)
+
+#define DIAG_DBUG(fmt, args...) \
+	do { \
+		if (diag7k_debug_mask) \
+			printk(KERN_INFO "[USBDIAG] " fmt, ## args); \
+		else \
+			pr_debug("[USBDIAG] " fmt, ## args); \
+	} while (0)
+
 #if DIAG_XPST
 struct device diag_device;
 static char *htc_write_buf_copy;

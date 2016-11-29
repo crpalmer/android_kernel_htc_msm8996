@@ -85,9 +85,6 @@
 #ifdef CONFIG_PARAVIRT
 #include <asm/paravirt.h>
 #endif
-#ifdef CONFIG_MSM_APP_SETTINGS
-#include <asm/app_api.h>
-#endif
 
 #include "sched.h"
 #include "../workqueue_internal.h"
@@ -4780,13 +4777,6 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 	fire_sched_out_preempt_notifiers(prev, next);
 	prepare_lock_switch(rq, next);
 	prepare_arch_switch(next);
-
-#ifdef CONFIG_MSM_APP_SETTINGS
-	if (next->mm && unlikely(next->mm->app_setting))
-		set_app_setting_bit(APP_SETTING_BIT);
-	else
-		clear_app_setting_bit(APP_SETTING_BIT);
-#endif
 }
 
 /**

@@ -44,9 +44,6 @@ unsigned int dump_pkt_tx;
 module_param(dump_pkt_tx, uint, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(dump_pkt_tx, "Dump packets exiting egress handler");
 #endif /* CONFIG_RMNET_DATA_DEBUG_PKT */
-long gro_flush_time __read_mostly = 10000L;
-module_param(gro_flush_time, long, S_IRUGO | S_IWUSR);
-MODULE_PARM_DESC(gro_flush_time, "Flush GRO when spaced more than this");
 
 /* Time in nano seconds. This number must be less that a second. */
 long gro_flush_time __read_mostly = 10000L;
@@ -200,8 +197,14 @@ static void rmnet_reset_mac_header(struct sk_buff *skb)
  * Determines whether to pass the skb to the GRO handler napi_gro_receive() or
  * handle normally by passing to netif_receive_skb().
  *
- * Tuning this parameter will trade TCP slow start performance for power.
+ * Warning:
+ * This assumes that only TCP packets can be coalesced by the GRO handler which
+ * is not true in general. We lose the ability to use GRO for cases like UDP
+ * encapsulation protocols.
  *
+ * Return:
+ *      - RMNET_DATA_GRO_RCV_FAIL if packet is sent to netif_receive_skb()
+ *      - RMNET_DATA_GRO_RCV_PASS if packet is sent to napi_gro_receive()
  */
 static int rmnet_check_skb_can_gro(struct sk_buff *skb)
 {

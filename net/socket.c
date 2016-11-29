@@ -596,6 +596,7 @@ const struct file_operations bad_sock_fops = {
  *	callback, and the inode is then released if the socket is bound to
  *	an inode not a file.
  */
+
 void sock_release(struct socket *sock)
 {
 	if (sock->ops) {

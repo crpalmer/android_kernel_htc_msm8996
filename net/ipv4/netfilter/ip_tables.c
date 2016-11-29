@@ -224,7 +224,7 @@ get_chainname_rulenum(const struct ipt_entry *s, const struct ipt_entry *e,
 	const struct xt_standard_target *t = (void *)ipt_get_target_c(s);
 
 	if (strcmp(t->target.u.kernel.target->name, XT_ERROR_TARGET) == 0) {
-		
+		/* Head of user chain: ERROR target with chainname */
 		*chainname = t->target.data;
 		(*rulenum) = 0;
 	} else if (s == e) {

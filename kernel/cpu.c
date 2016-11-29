@@ -31,9 +31,6 @@
 /* Serializes the updates to cpu_online_mask, cpu_present_mask */
 static DEFINE_MUTEX(cpu_add_remove_lock);
 
-extern int have_cpu_mask;
-extern struct cpumask cpu_mask;
-
 /*
  * The following two APIs (cpu_maps_update_begin/done) must be used when
  * attempting to serialize the updates to cpu_online_mask & cpu_present_mask.
@@ -526,9 +523,6 @@ int cpu_up(unsigned int cpu)
 {
 	int err = 0;
 
-
-	if(unlikely(have_cpu_mask) && cpumask_test_cpu(cpu, &cpu_mask))
-		return -EACCES;
 
 	if (!cpu_possible(cpu)) {
 		pr_err("can't online cpu %d because it is not configured as may-hotadd at boot time\n",

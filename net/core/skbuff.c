@@ -2639,7 +2639,6 @@ onlymerged:
 	skb->len -= shiftlen;
 	skb->data_len -= shiftlen;
 	skb->truesize -= shiftlen;
-    BUG_ON(skb->truesize == 0x6B6B6B6A);
 	tgt->len += shiftlen;
 	tgt->data_len += shiftlen;
 	tgt->truesize += shiftlen;
@@ -3510,7 +3509,6 @@ static void sock_rmem_free(struct sk_buff *skb)
 	struct sock *sk = skb->sk;
 
 	atomic_sub(skb->truesize, &sk->sk_rmem_alloc);
-    BUG_ON(skb->truesize == 0x6B6B6B6A);
 }
 
 /*

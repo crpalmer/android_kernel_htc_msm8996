@@ -4682,7 +4682,7 @@ wl_cfg80211_extra_disc()
 		wl_clr_drv_status(cfg, CONNECTED, ndev);
 		wl_set_drv_status(cfg, DISCONNECTING, ndev);
 		cfg80211_disconnected(ndev, WLAN_REASON_DEAUTH_LEAVING,
-			NULL, 0, GFP_KERNEL);
+			NULL, 0, false, GFP_KERNEL);
 		wl_link_down(cfg);
 		wl_init_prof(cfg, ndev);
 		wl_clr_drv_status(cfg, DISCONNECTING, ndev);
@@ -5389,7 +5389,7 @@ get_station_err:
 			
 			WL_ERR(("force cfg80211_disconnected: %d\n", err));
 			wl_clr_drv_status(cfg, CONNECTED, dev);
-			cfg80211_disconnected(dev, 0, NULL, 0, GFP_KERNEL);
+			cfg80211_disconnected(dev, 0, NULL, 0, false, GFP_KERNEL);
 			wl_link_down(cfg);
 		}
 #ifdef CUSTOMER_HW_ONE
@@ -10141,7 +10141,7 @@ wl_notify_connect_status(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 						WL_ERR(("WLC_DISASSOC error %d\n", err));
 						err = 0;
 					}
-					cfg80211_disconnected(ndev, reason, NULL, 0, GFP_KERNEL);
+					cfg80211_disconnected(ndev, reason, NULL, 0, false, GFP_KERNEL);
 					wl_link_down(cfg);
 					wl_init_prof(cfg, ndev);
 					memset(&cfg->last_roamed_addr, 0, ETHER_ADDR_LEN);
@@ -10867,7 +10867,7 @@ wl_notify_pfn_status(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 #ifndef WL_SCHED_SCAN
 	mutex_lock(&cfg->usr_sync);
 	
-	cfg80211_disconnected(ndev, 0, NULL, 0, GFP_KERNEL);
+	cfg80211_disconnected(ndev, 0, NULL, 0, false, GFP_KERNEL);
 	mutex_unlock(&cfg->usr_sync);
 #else
 	wl_notify_sched_scan_results(cfg, ndev, e, data);
@@ -14270,7 +14270,7 @@ int wl_cfg80211_hang(struct net_device *dev, u16 reason)
 	} else
 #endif 
 	{
-		cfg80211_disconnected(dev, reason, NULL, 0, GFP_KERNEL);
+		cfg80211_disconnected(dev, reason, NULL, 0, false, GFP_KERNEL);
 	}
 	if (cfg != NULL) {
 		wl_link_down(cfg);
@@ -16397,7 +16397,7 @@ wl_set_band_disconnect(struct net_device *ndev)
 				return;
 			}
 			cfg80211_disconnected(ndev, WLAN_REASON_DEAUTH_LEAVING,
-				NULL, 0, GFP_KERNEL);
+				NULL, 0, false, GFP_KERNEL);
 			wl_link_down(cfg);
 			wl_init_prof(cfg, ndev);
 		}

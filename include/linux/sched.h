@@ -323,7 +323,6 @@ static inline int get_nohz_timer_target(int pinned)
  * Only dump TASK_* tasks. (0 for all tasks)
  */
 extern void show_state_filter(unsigned long state_filter);
-extern void show_thread_group_state_filter(const char *tg_comm, unsigned long state_filter);
 
 static inline void show_state(void)
 {

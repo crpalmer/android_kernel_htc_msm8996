@@ -7208,17 +7208,6 @@ void sched_show_task(struct task_struct *p)
 	printk(KERN_CONT "  tgid: %d, group leader: %s\n",
 			p->tgid, group_leader ? group_leader->comm : "unknown");
 
-#if defined(CONFIG_DEBUG_MUTEXES)
-	if (state == TASK_UNINTERRUPTIBLE) {
-		struct task_struct* blocker = p->blocked_by;
-		if (blocker) {
-			printk(KERN_CONT " blocked by %.32s (%d:%d) for %u ms\n",
-				blocker->comm, blocker->tgid, blocker->pid,
-				jiffies_to_msecs(jiffies - p->blocked_since));
-		}
-	}
-#endif
-
 	print_worker_info(KERN_INFO, p);
 	show_stack(p, NULL);
 }

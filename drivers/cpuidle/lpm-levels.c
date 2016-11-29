@@ -23,7 +23,6 @@
 #include <linux/hrtimer.h>
 #include <linux/ktime.h>
 #include <linux/tick.h>
-#include <linux/console.h>
 #include <linux/suspend.h>
 #include <linux/pm_qos.h>
 #include <linux/of_platform.h>
@@ -52,14 +51,10 @@
 #include <trace/events/trace_msm_low_power.h>
 #include "../../drivers/clk/msm/clock.h"
 
-static inline int msm_watchdog_suspend_deferred(void) { return 0; }
-static inline int msm_watchdog_resume_deferred(void) { return 0; }
-
 #define SCLK_HZ (32768)
 #define SCM_HANDOFF_LOCK_ID "S:7"
 #define PSCI_POWER_STATE(reset) (reset << 30)
 #define PSCI_AFFINITY_LEVEL(lvl) ((lvl & 0x3) << 24)
-
 static remote_spinlock_t scm_handoff_lock;
 
 enum {
@@ -145,29 +140,6 @@ void lpm_suspend_wake_time(uint64_t wakeup_time)
 		suspend_wake_time = wakeup_time;
 }
 EXPORT_SYMBOL(lpm_suspend_wake_time);
-
-static void htc_lpm_pre_action(bool from_idle)
-{
-	int is_last_core_for_suspend = (!from_idle && cpu_online(smp_processor_id()));
-
-	if (is_last_core_for_suspend) {
-		
-		if (suspend_console_deferred)
-			suspend_console();
-	}
-}
-
-static void htc_lpm_post_action(bool from_idle)
-{
-	int is_last_core_for_suspend = (!from_idle && cpu_online(smp_processor_id()));
-
-	if (is_last_core_for_suspend) {
-		if (suspend_console_deferred)
-			resume_console();
-
-		
-	}
-}
 
 static void update_debug_pc_event(enum debug_event event, uint32_t arg1,
 		uint32_t arg2, uint32_t arg3, uint32_t arg4)
@@ -796,11 +768,9 @@ bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 	 * idx = 0 is the default LPM state
 	 */
 	if (!idx) {
-		htc_lpm_pre_action(from_idle);
 		stop_critical_timings();
 		wfi();
 		start_critical_timings();
-		htc_lpm_post_action(from_idle);
 		return 1;
 	} else {
 		int affinity_level = 0;
@@ -823,11 +793,7 @@ bool psci_enter_sleep(struct lpm_cluster *cluster, int idx, bool from_idle)
 		update_debug_pc_event(CPU_ENTER, state_id,
 						0xdeaffeed, 0xdeaffeed, true);
 		stop_critical_timings();
-
-		htc_lpm_pre_action(from_idle);
 		success = !cpu_suspend(state_id);
-		htc_lpm_post_action(from_idle);
-
 		start_critical_timings();
 		update_debug_pc_event(CPU_EXIT, state_id,
 						success, 0xdeaffeed, true);
@@ -1157,7 +1123,8 @@ static int lpm_suspend_enter(suspend_state_t state)
 	if (!use_psci)
 		msm_cpu_pm_enter_sleep(cluster->cpu->levels[idx].mode, false);
 	else
-		psci_enter_sleep(cluster, idx, false);
+		psci_enter_sleep(cluster, idx, true);
+
 	if (idx > 0)
 		update_debug_pc_event(CPU_EXIT, idx, true, 0xdeaffeed,
 					false);
@@ -1239,8 +1206,6 @@ static int lpm_probe(struct platform_device *pdev)
 				__func__);
 		goto failed;
 	}
-
-	suspend_console_deferred = 1;
 
 	return 0;
 failed:

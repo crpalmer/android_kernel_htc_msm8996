@@ -5,10 +5,11 @@
 GUD_ROOT_FOLDER := drivers/gud/
 
 # add our modules to kernel.
-obj-$(CONFIG_TRUSTONIC_TEE) += mcDrvModule.o
+obj-$(CONFIG_MOBICORE_DRIVER) += mcDrvModule.o
 
 mcDrvModule-y := \
 	admin.o \
+	api.o \
 	client.o \
 	clientlib.o \
 	clock.o \
@@ -19,14 +20,14 @@ mcDrvModule-y := \
 	mmu.o \
 	pm.o \
 	scheduler.o \
-	session.o \
-	user.o
+	session.o
 
 # Release mode by default
 ccflags-y += -DNDEBUG
 ccflags-y += -Wno-declaration-after-statement
 
-ccflags-$(CONFIG_TRUSTONIC_TEE_DEBUG) += -DDEBUG
+ccflags-$(CONFIG_MOBICORE_DEBUG) += -DDEBUG
 
 # MobiCore Driver includes
 ccflags-y += -I$(GUD_ROOT_FOLDER)/MobiCoreDriver
+

@@ -15,17 +15,30 @@
 #ifndef _TBASE_MEM_H_
 #define _TBASE_MEM_H_
 
-struct tee_mmu;
+struct tbase_mmu;
 struct mcp_buffer_map;
 
-struct tee_mmu *tee_mmu_create(struct task_struct *task, const void *wsm_buffer,
-			       unsigned int wsm_len);
+/*
+ * Allocate MMU table and map buffer into it.
+ * That is, create respective table entries.
+ */
+struct tbase_mmu *tbase_mmu_create(struct task_struct *task,
+				   const void *wsm_buffer,
+				   unsigned int wsm_len);
 
-void tee_mmu_delete(struct tee_mmu *mmu);
+/*
+ * Delete a used MMU table.
+ */
+void tbase_mmu_delete(struct tbase_mmu *mmu);
 
-void tee_mmu_buffer(const struct tee_mmu *mmu, struct mcp_buffer_map *map);
+/*
+ * Fill in buffer info for MMU table.
+ */
+void tbase_mmu_buffer(const struct tbase_mmu *mmu, struct mcp_buffer_map *map);
 
-int tee_mmu_debug_structs(struct kasnprintf_buf *buf,
-			  const struct tee_mmu *mmu);
+/*
+ * Add info to debug buffer.
+ */
+int tbase_mmu_info(const struct tbase_mmu *mmu, struct kasnprintf_buf *buf);
 
-#endif 
+#endif /* _TBASE_MEM_H_ */

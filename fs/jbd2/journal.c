@@ -1710,6 +1710,10 @@ int jbd2_journal_destroy(journal_t *journal)
 		mutex_lock(&journal->j_checkpoint_mutex);
 		err = jbd2_log_do_checkpoint(journal);
 		mutex_unlock(&journal->j_checkpoint_mutex);
+		/*
+		 * If checkpointing failed, just free the buffers to avoid
+		 * looping forever
+		 */
 		if (err) {
 			jbd2_journal_destroy_checkpoint(journal);
 			spin_lock(&journal->j_list_lock);

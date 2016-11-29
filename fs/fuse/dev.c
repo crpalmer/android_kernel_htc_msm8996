@@ -25,7 +25,6 @@
 
 MODULE_ALIAS_MISCDEV(FUSE_MINOR);
 MODULE_ALIAS("devname:fuse");
-#define wake_up_sync(x)   __wake_up_sync((x), TASK_NORMAL, 1)
 
 static struct kmem_cache *fuse_req_cachep;
 
@@ -322,7 +321,7 @@ static void queue_request(struct fuse_conn *fc, struct fuse_req *req)
 		req->waiting = 1;
 		atomic_inc(&fc->num_waiting);
 	}
-	wake_up_sync(&fc->waitq);
+	wake_up(&fc->waitq);
 	kill_fasync(&fc->fasync, SIGIO, POLL_IN);
 }
 
@@ -396,7 +395,7 @@ __releases(fc->lock)
 		flush_bg_queue(fc);
 	}
 	spin_unlock(&fc->lock);
-	wake_up_sync(&req->waitq);
+	wake_up(&req->waitq);
 	if (end)
 		end(fc, req);
 	fuse_put_request(fc, req);

@@ -46,7 +46,6 @@
 #include "truncate.h"
 
 #include <trace/events/ext4.h>
-#include <trace/events/mmcio.h>
 
 #define MPAGE_DA_EXTENT_TAIL 0x01
 
@@ -3534,6 +3533,9 @@ out_mutex:
 	mutex_unlock(&inode->i_mutex);
 	return ret;
 #else
+	/*
+	 * Disabled as per b/28760453
+	 */
 	return -EOPNOTSUPP;
 #endif
 }

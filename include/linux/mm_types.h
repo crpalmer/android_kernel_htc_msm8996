@@ -207,9 +207,6 @@ struct page {
 	struct stack_trace trace;
 	unsigned long trace_entries[8];
 #endif
-
-	DECLARE_PAGE_USER_TRACE(trace_alloc);
-	DECLARE_PAGE_USER_TRACE(trace_free);
 }
 /*
  * The struct page can be forced to be double word aligned so that atomic ops

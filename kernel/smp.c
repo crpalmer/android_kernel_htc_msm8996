@@ -17,8 +17,6 @@
 
 #include "smpboot.h"
 
-#include <linux/htc_flags.h>
-
 enum {
 	CSD_FLAG_LOCK		= 0x01,
 	CSD_FLAG_WAIT		= 0x02,

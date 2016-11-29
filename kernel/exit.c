@@ -58,7 +58,6 @@
 #include <asm/unistd.h>
 #include <asm/pgtable.h>
 #include <asm/mmu_context.h>
-#include <htc_debug/stability/htc_process_debug.h>
 
 static void exit_mm(struct task_struct *tsk);
 

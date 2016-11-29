@@ -44,7 +44,6 @@
 #include <asm/siginfo.h>
 #include <asm/cacheflush.h>
 #include "audit.h"	/* audit_signal_info() */
-#include <htc_debug/stability/htc_process_debug.h>
 
 /*
  * SLAB caches for signal bits.

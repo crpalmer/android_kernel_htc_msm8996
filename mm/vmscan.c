@@ -1233,6 +1233,7 @@ unsigned long reclaim_clean_pages_from_list(struct zone *zone,
 {
 	struct scan_control sc = {
 		.gfp_mask = GFP_KERNEL,
+		.order = 0,
 		.priority = DEF_PRIORITY,
 		.may_unmap = 1,
 		/* Doesn't allow to write out dirty page */
@@ -1264,6 +1265,7 @@ unsigned long reclaim_pages_from_list(struct list_head *page_list,
 {
 	struct scan_control sc = {
 		.gfp_mask = GFP_KERNEL,
+		.order = 0,
 		.priority = DEF_PRIORITY,
 		.may_writepage = 1,
 		.may_unmap = 1,
@@ -2519,6 +2521,7 @@ static bool shrink_zones(struct zonelist *zonelist, struct scan_control *sc)
 	gfp_t orig_mask;
 	struct shrink_control shrink = {
 		.gfp_mask = sc->gfp_mask,
+		.order = sc->order,
 	};
 	enum zone_type requested_highidx = gfp_zone(sc->gfp_mask);
 	bool reclaimable = false;
@@ -2866,6 +2869,7 @@ unsigned long mem_cgroup_shrink_node_zone(struct mem_cgroup *memcg,
 {
 	struct scan_control sc = {
 		.nr_to_reclaim = SWAP_CLUSTER_MAX,
+		.order = 0,
 		.target_mem_cgroup = memcg,
 		.may_writepage = !laptop_mode,
 		.may_unmap = 1,
@@ -2908,6 +2912,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *memcg,
 		.nr_to_reclaim = max(nr_pages, SWAP_CLUSTER_MAX),
 		.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
 				(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK),
+		.order = 0,
 		.target_mem_cgroup = memcg,
 		.priority = DEF_PRIORITY,
 		.may_writepage = !laptop_mode,
@@ -3079,6 +3084,7 @@ static bool kswapd_shrink_zone(struct zone *zone,
 	struct reclaim_state *reclaim_state = current->reclaim_state;
 	struct shrink_control shrink = {
 		.gfp_mask = sc->gfp_mask,
+		.order = sc->order,
 	};
 	bool lowmem_pressure;
 
@@ -3559,6 +3565,7 @@ unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
 	struct scan_control sc = {
 		.nr_to_reclaim = nr_to_reclaim,
 		.gfp_mask = GFP_HIGHUSER_MOVABLE,
+		.order = 0,
 		.priority = DEF_PRIORITY,
 		.may_writepage = 1,
 		.may_unmap = 1,

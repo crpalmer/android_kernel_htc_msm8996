@@ -9,10 +9,3 @@ config HTC_MODEM_NOTIFIER
 	default N
 	---help---
 	Enable to notify modem APP is rebooting
-
-config HTC_GARBAGE_FILTER
-	tristate "HTC_GARBAGE_FILTER"
-	default n
-	depends on MSM_SMD
-	---help---
-	  HTC Garbage Filter of TCP

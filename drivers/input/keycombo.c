@@ -25,14 +25,6 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 
-#ifdef CONFIG_KPDPWR_S2_DVDD_RESET
-#include <linux/qpnp/power-on.h>
-struct hrtimer clr_kpd_reset_timer;
-struct hrtimer enable_kpd_s2_timer;
-static int clear_kpdpwr_s2_rst_flag;
-#define KPDPWR_CLR_RESET_TIMER (150 * NSEC_PER_MSEC) /* Time out set as 0.15 sec. */
-#endif /* CONFIG_KPDPWR_S2_DVDD_RESET */
-
 static unsigned int vzw_key_flag = 0;
 
 struct keycombo_state {
@@ -56,192 +48,6 @@ struct keycombo_state {
 	struct wakeup_source combo_up_wake_source;
 };
 
-
-#if defined(CONFIG_POWER_KEY_CLR_RESET)
-static uint32_t clr_gpio;
-static struct pinctrl *key_pinctrl;
-static struct kobject *android_key_kobj;
-
-#ifdef CONFIG_KPDPWR_S2_DVDD_RESET
-static enum hrtimer_restart clr_kpd_rst_timer_func(struct hrtimer *timer)
-{
-	if (qpnp_get_reset_en(PON_KPDPWR) > 0) {
-		qpnp_config_reset_enable(PON_KPDPWR, 0);
-		qpnp_config_reset_enable(PON_KPDPWR, 1);
-		hrtimer_start(&enable_kpd_s2_timer, ktime_set(0, 0), HRTIMER_MODE_REL);
-	}
-
-	return HRTIMER_NORESTART;
-}
-
-static enum hrtimer_restart enable_kpd_s2_timer_func(struct hrtimer *timer)
-{
-	qpnp_config_reset_enable(PON_KPDPWR, 1);
-	if (clear_kpdpwr_s2_rst_flag) {
-		hrtimer_start(&clr_kpd_reset_timer,
-			ktime_set(0, KPDPWR_CLR_RESET_TIMER), HRTIMER_MODE_REL);
-	} else {
-		if (hrtimer_is_queued(&clr_kpd_reset_timer))
-			hrtimer_cancel(&clr_kpd_reset_timer);
-		if (hrtimer_is_queued(&enable_kpd_s2_timer))
-			hrtimer_cancel(&enable_kpd_s2_timer);
-	}
-
-	return HRTIMER_NORESTART;
-}
-#endif /* CONFIG_KPDPWR_S2_DVDD_RESET */
-
-static int keycombo_pinctrl_configure(struct pinctrl *key_pinctrl, bool active);
-void clear_hw_reset(void)
-{
-	int error;
-
-	KEY_LOGI("clear_hw_reset++++++++++(%d)\n", clr_gpio);
-	if (key_pinctrl) {
-		error = keycombo_pinctrl_configure(key_pinctrl, true);
-		if (error == 0)
-			KEY_LOGI("set pinctrl active\n");
-	} else {
-		if (gpio_direction_output(clr_gpio, 0) < 0)
-			KEY_LOGE("gpio_direction_output GPIO %d failed\n", clr_gpio);
-	}
-
-	msleep(100);
-
-	if (key_pinctrl) {
-		error = keycombo_pinctrl_configure(key_pinctrl, false);
-		if (error == 0)
-			KEY_LOGI("set pinctrl normal\n");
-	} else {
-		if (gpio_direction_input(clr_gpio) < 0)
-			KEY_LOGE("gpio_direction_input GPIO %d failed\n", clr_gpio);
-	}
-	KEY_LOGI("clear_hw_reset----------\n");
-}
-
-static void keep_hw_reset_clear(struct work_struct *);
-DECLARE_DELAYED_WORK(clear_restart_work, &keep_hw_reset_clear);
-
-static void keep_hw_reset_clear(struct work_struct *dummy)
-{
-#ifdef CONFIG_KPDPWR_S2_DVDD_RESET
-	clear_kpdpwr_s2_rst_flag = 1;
-	KEY_LOGD("%s: Enable kpdpwr s2 reset clear up [%d]\n",
-				__func__, clear_kpdpwr_s2_rst_flag);
-	hrtimer_start(&clr_kpd_reset_timer,
-		ktime_set(0, KPDPWR_CLR_RESET_TIMER), HRTIMER_MODE_REL);
-#endif /* CONFIG_KPDPWR_S2_DVDD_RESET */
-	clear_hw_reset();
-	schedule_delayed_work(&clear_restart_work, msecs_to_jiffies(1000));
-}
-
-static void start_reset_clear(void *dummy)
-{
-	schedule_delayed_work(&clear_restart_work, msecs_to_jiffies(1000));
-}
-
-static void stop_clearing(void *dummy)
-{
-#ifdef CONFIG_KPDPWR_S2_DVDD_RESET
-	clear_kpdpwr_s2_rst_flag = 0;
-	KEY_LOGD("%s: Disable kpdpwr s2 reset clear up [%d]\n",
-				__func__, clear_kpdpwr_s2_rst_flag);
-	if (hrtimer_is_queued(&clr_kpd_reset_timer))
-		hrtimer_cancel(&clr_kpd_reset_timer);
-	if (hrtimer_is_queued(&enable_kpd_s2_timer))
-		hrtimer_cancel(&enable_kpd_s2_timer);
-#endif /* CONFIG_KPDPWR_S2_DVDD_RESET */
-	cancel_delayed_work_sync(&clear_restart_work);
-}
-
-static ssize_t clr_gpio_store(struct device *dev,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
-{
-	unsigned char value;
-
-	if (kstrtou8(buf, 10, &value) < 0) {
-		KEY_LOGI("%s: input out of range\n",__func__);
-		return -EINVAL;
-	}
-
-	value = value ? true : false;
-
-	if (gpio_direction_output(clr_gpio, value) < 0)
-		KEY_LOGE("gpio_direction_output GPIO %d failed\n", clr_gpio);
-	else
-		KEY_LOGI("%s, set gpio value = %d\n", __func__, value);
-
-	return count;
-}
-
-static ssize_t clr_gpio_show(struct device *dev,
-				struct device_attribute *attr, char *buf)
-{
-	return scnprintf(buf, PAGE_SIZE, "%d\n", gpio_get_value(clr_gpio));
-}
-
-static DEVICE_ATTR(clr_gpio, S_IRUGO | S_IWUSR , clr_gpio_show, clr_gpio_store);
-
-static int keycombo_sysfs_init(void)
-{
-	int ret = 0;
-
-	android_key_kobj = kobject_create_and_add("android_key", NULL);
-
-	if (android_key_kobj == NULL) {
-		KEY_LOGE("%s: create kobj failed\n", __func__);
-		ret = -ENOMEM;
-		return ret;
-	}
-
-	ret = sysfs_create_file(android_key_kobj, &dev_attr_clr_gpio.attr);
-	if (ret) {
-		KEY_LOGE("%s: sysfs_create_file clr_gpio failed\n", __func__);
-		return ret;
-	}
-
-	return 0;
-}
-
-static void keycombo_sysfs_remove(void)
-{
-	sysfs_remove_file(android_key_kobj, &dev_attr_clr_gpio.attr);
-	kobject_put(android_key_kobj);
-}
-
-static int keycombo_pinctrl_configure(struct pinctrl *key_pinctrl,
-							bool active)
-{
-	struct pinctrl_state *set_state;
-	int retval;
-
-	if (active) {
-		set_state =
-			pinctrl_lookup_state(key_pinctrl,
-						"keycombo_active");
-		if (IS_ERR(set_state)) {
-			KEY_LOGE("%s: cannot get pinctrl active state\n", __func__);
-			return PTR_ERR(set_state);
-		}
-	} else {
-		set_state =
-			pinctrl_lookup_state(key_pinctrl,
-						"keycombo_normal");
-		if (IS_ERR(set_state)) {
-			KEY_LOGE("%s: cannot get pinctrl normal state\n", __func__);
-			return PTR_ERR(set_state);
-		}
-	}
-	retval = pinctrl_select_state(key_pinctrl, set_state);
-	if (retval) {
-		KEY_LOGE("%s: cannot set pinctrl, active = %d\n", __func__, active);
-		return retval;
-	}
-
-	return 0;
-}
-#endif /* CONFIG_POWER_KEY_CLR_RESET */
 
 static void do_key_down(struct work_struct *work)
 {
@@ -364,11 +170,7 @@ static int keycombo_parse_dt(struct device_node *dt,
 {
 	int ret = 0, cnt = 0, num_keys;
 	struct property *prop;
-	char parser_st[4][15] = {"key_down_delay", "keys_down", "keys_up"
-#if defined(CONFIG_POWER_KEY_CLR_RESET)
-					, "clr_gpio"
-#endif
-				};
+	char parser_st[4][15] = {"key_down_delay", "keys_down", "keys_up"};
 
 	if (vzw_key_flag) {
 		KEY_LOGI("DT: customize\n");
@@ -435,17 +237,6 @@ static int keycombo_parse_dt(struct device_node *dt,
 
 	for(cnt = 0; cnt < num_keys; cnt++)
 		KEY_LOGI("DT:%s=%d\n", parser_st[2], pdata->keys_up[cnt]);
-
-#if defined(CONFIG_POWER_KEY_CLR_RESET)
-	/* Parse clr_gpio */
-	ret = of_get_named_gpio(dt, parser_st[3], 0);
-	if (!gpio_is_valid(ret))
-		KEY_LOGI("DT:%s parser fails/gets nothing, ret=%d\n", parser_st[3], ret);
-	else
-		pdata->clr_gpio = ret;
-
-	KEY_LOGI("DT:%s=(%d)\n", parser_st[3], pdata->clr_gpio);
-#endif
 
 	return 0;
 
@@ -532,66 +323,6 @@ static int keycombo_probe(struct platform_device *pdev)
 
 	state->priv = pdata->priv;
 
-#if defined(CONFIG_POWER_KEY_CLR_RESET)
-	if(state->priv == NULL) {
-		/* Get pinctrl if target uses pinctrl */
-		key_pinctrl = devm_pinctrl_get(&pdev->dev);
-		if (IS_ERR(key_pinctrl)) {
-			if (PTR_ERR(key_pinctrl) == -EPROBE_DEFER)
-				return -EPROBE_DEFER;
-
-			KEY_LOGI("Target does not use pinctrl\n");
-			key_pinctrl = NULL;
-		} else {
-			if (key_pinctrl) {
-				KEY_LOGI("control clr_gpio by pinctrl\n");
-				ret = keycombo_pinctrl_configure(key_pinctrl, false);
-				if (ret) {
-					KEY_LOGE("%s: fail to set pinctrl to normal state, %d\n",
-							__func__, ret);
-					goto err_pinctrl_configure_fail;
-				}
-			}
-		}
-
-		if (gpio_is_valid(pdata->clr_gpio)) {
-			ret = gpio_request(pdata->clr_gpio, "pwr_mistouch");
-			if (ret) {
-				KEY_LOGE("%s: unable to request gpio %d (%d)\n",
-					__func__, pdata->clr_gpio, ret);
-				goto err_wq_alloc_fail;
-			}
-
-			clr_gpio = pdata->clr_gpio;
-
-			/* Contrl gpio directly if target does not use pinctrl */
-			if(key_pinctrl == NULL) {
-				KEY_LOGI("control clr_gpio directly\n");
-				ret = gpio_direction_input(pdata->clr_gpio);
-				if (ret) {
-					KEY_LOGE("%s: Unable to set direction, %d\n",
-							__func__, ret);
-					goto err_wq_alloc_fail;
-				}
-			}
-		} else {
-			KEY_LOGE("%s: clr_gpio is not defined\n", __func__);
-			ret = -EIO;
-			goto err_wq_alloc_fail;
-		}
-
-		pdata->key_down_fn	= &start_reset_clear;
-		pdata->key_up_fn	= &stop_clearing;
-	}
-#endif
-
-#if defined(CONFIG_KPDPWR_S2_DVDD_RESET) && defined(CONFIG_POWER_KEY_CLR_RESET)
-		hrtimer_init(&clr_kpd_reset_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-		clr_kpd_reset_timer.function = clr_kpd_rst_timer_func;
-		hrtimer_init(&enable_kpd_s2_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-		enable_kpd_s2_timer.function = enable_kpd_s2_timer_func;
-#endif /* CONFIG_KPDPWR_S2_DVDD_RESET && CONFIG_POWER_KEY_CLR_RESET */
-
 	if (pdata->key_down_fn)
 		state->key_down_fn = pdata->key_down_fn;
 	INIT_DELAYED_WORK(&state->key_down_work, do_key_down);
@@ -616,20 +347,11 @@ static int keycombo_probe(struct platform_device *pdev)
 	}
 	platform_set_drvdata(pdev, state);
 
-#if defined(CONFIG_POWER_KEY_CLR_RESET)
-	if(state->priv == NULL){
-		keycombo_sysfs_init();
-	}
-#endif
-
 	KEY_LOGI("%s: ---\n", __func__);
 	return 0;
 
 err_input_handler_fail:
 	destroy_workqueue(state->wq);
-#if defined(CONFIG_POWER_KEY_CLR_RESET)
-err_pinctrl_configure_fail:
-#endif
 err_wq_alloc_fail:
 	kfree(state);
 err_parse_fail:
@@ -642,9 +364,6 @@ err_get_pdata_fail:
 int keycombo_remove(struct platform_device *pdev)
 {
 	struct keycombo_state *state = platform_get_drvdata(pdev);
-#if defined(CONFIG_POWER_KEY_CLR_RESET)
-	keycombo_sysfs_remove();
-#endif
 	input_unregister_handler(&state->input_handler);
 	destroy_workqueue(state->wq);
 	kfree(state);

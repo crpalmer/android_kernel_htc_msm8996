@@ -174,12 +174,6 @@ config INPUT_APMPOWER
 	  To compile this driver as a module, choose M here: the
 	  module will be called apm-power.
 
-config POWER_KEY_CLR_RESET
-	tristate "Power key clear reset"
-	depends on INPUT_KEYCOMBO
-	help
-	  Say Y here if you do not want to reset when power key is pressed.
-
 config INPUT_KEYLED
 	tristate "Virtual key led blink"
 	depends on INPUT

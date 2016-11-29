@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 TRUSTONIC LIMITED
+ * Copyright (c) 2013-2015 TRUSTONIC LIMITED
  * All Rights Reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -11,5 +11,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#define MOBICORE_COMPONENT_BUILD_TAG \
-	"t-base-QC-MSM8996-Android-310A-V002-20151016_104913_950"
+
+#ifndef _USER_H_
+#define _USER_H_
+
+struct cdev;
+
+int mc_user_init(struct cdev *cdev);
+static inline void mc_user_exit(void)
+{
+}
+
+#endif 

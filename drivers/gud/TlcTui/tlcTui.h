@@ -11,5 +11,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#define MOBICORE_COMPONENT_BUILD_TAG \
-	"t-base-QC-MSM8996-Android-310A-V002-20151016_104913_950"
+
+#ifndef TLCTUI_H_
+#define TLCTUI_H_
+
+void reset_global_command_id(void);
+int tlc_wait_cmd(uint32_t *cmd_id);
+int tlc_ack_cmd(struct tlc_tui_response_t *rsp_id);
+bool tlc_notify_event(uint32_t event_type);
+
+extern atomic_t fileopened;
+#endif 

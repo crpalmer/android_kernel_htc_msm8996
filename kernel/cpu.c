@@ -361,7 +361,7 @@ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
 		return -EBUSY;
 
 	if (!cpu_online(cpu))
-		return -EINVAL;
+		return 0;
 
 	cpu_hotplug_begin();
 
@@ -472,7 +472,12 @@ static int _cpu_up(unsigned int cpu, int tasks_frozen)
 
 	cpu_hotplug_begin();
 
-	if (cpu_online(cpu) || !cpu_present(cpu)) {
+	if (cpu_online(cpu)) {
+		ret = 0;
+		goto out;
+	}
+
+	if (!cpu_present(cpu)) {
 		ret = -EINVAL;
 		goto out;
 	}
@@ -517,6 +522,7 @@ out:
 int cpu_up(unsigned int cpu)
 {
 	int err = 0;
+
 
 	if (!cpu_possible(cpu)) {
 		pr_err("can't online cpu %d because it is not configured as may-hotadd at boot time\n",

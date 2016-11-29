@@ -14,18 +14,12 @@
  */
 
 #include <linux/input.h>
-#include <linux/of.h>
-#include <linux/of_gpio.h>
-#include <linux/gpio.h>
-#include <linux/delay.h>
 #include <linux/keycombo.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/reboot.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
-
-static unsigned int vzw_key_flag = 0;
 
 struct keycombo_state {
 	struct input_handler input_handler;
@@ -47,7 +41,6 @@ struct keycombo_state {
 	struct wakeup_source combo_held_wake_source;
 	struct wakeup_source combo_up_wake_source;
 };
-
 
 static void do_key_down(struct work_struct *work)
 {
@@ -165,90 +158,6 @@ static void keycombo_disconnect(struct input_handle *handle)
 	kfree(handle);
 }
 
-static int keycombo_parse_dt(struct device_node *dt,
-		struct keycombo_platform_data *pdata)
-{
-	int ret = 0, cnt = 0, num_keys;
-	struct property *prop;
-	char parser_st[4][15] = {"key_down_delay", "keys_down", "keys_up"};
-
-	if (vzw_key_flag) {
-		KEY_LOGI("DT: customize\n");
-		snprintf(parser_st[1], 15, "vzw_keys_down");
-		snprintf(parser_st[2], 15, "vzw_keys_up");
-	}
-
-	/* Parse key_down_delay */
-	if (of_property_read_u32(dt, parser_st[0], &pdata->key_down_delay))
-		KEY_LOGI("DT:%s parser gets nothing\n", parser_st[0]);
-
-	KEY_LOGI("DT:%s=%d\n", parser_st[0], pdata->key_down_delay);
-
-	/* Parse keys_down keycode */
-	prop = of_find_property(dt, parser_st[1], NULL);
-	if (!prop) {
-		KEY_LOGE("DT:%s property not found\n", parser_st[1]);
-		ret = -EINVAL;
-		goto err_parse_keys_down_failed;
-	} else {
-		num_keys = prop->length / sizeof(uint32_t);
-		KEY_LOGI("DT:%s num_keys=%d\n", parser_st[1], num_keys);
-	}
-
-	pdata->keys_down = kzalloc(num_keys * sizeof(uint32_t), GFP_KERNEL);
-	if (!pdata->keys_down) {
-		KEY_LOGE("DT:%s fail to allocate memory\n", parser_st[1]);
-		ret = -ENOMEM;
-		goto err_parse_keys_down_failed;
-	}
-
-	if (of_property_read_u32_array(dt, parser_st[1], pdata->keys_down, num_keys)) {
-		KEY_LOGE("DT:%s parse err\n", parser_st[1]);
-		ret = -EINVAL;
-		goto err_keys_down_failed;
-	}
-
-	for(cnt = 0; cnt < num_keys; cnt++)
-		KEY_LOGI("DT:%s=%d\n", parser_st[1], pdata->keys_down[cnt]);
-
-	/* Parse keys_up keycode */
-	prop = of_find_property(dt, parser_st[2], NULL);
-	if (!prop) {
-		KEY_LOGE("DT:%s property not found\n", parser_st[2]);
-		ret = -EINVAL;
-		goto err_parse_keys_up_ailed;
-	} else {
-		num_keys = prop->length / sizeof(uint32_t);
-		KEY_LOGI("DT:%s num_keys=%d\n", parser_st[2], num_keys);
-	}
-
-	pdata->keys_up = kzalloc(num_keys * sizeof(uint32_t), GFP_KERNEL);
-	if (!pdata->keys_up) {
-		KEY_LOGE("DT:%s fail to allocate memory\n", parser_st[2]);
-		ret = -ENOMEM;
-		goto err_parse_keys_up_ailed;
-	}
-
-	if (of_property_read_u32_array(dt, parser_st[2], pdata->keys_up, num_keys)) {
-		KEY_LOGE("DT:%s parse err\n", parser_st[2]);
-		ret = -EINVAL;
-		goto err_keys_up_failed;
-	}
-
-	for(cnt = 0; cnt < num_keys; cnt++)
-		KEY_LOGI("DT:%s=%d\n", parser_st[2], pdata->keys_up[cnt]);
-
-	return 0;
-
-err_keys_up_failed:
-	kfree(pdata->keys_up);
-err_parse_keys_up_ailed:
-err_keys_down_failed:
-	kfree(pdata->keys_down);
-err_parse_keys_down_failed:
-	return ret;
-}
-
 static const struct input_device_id keycombo_ids[] = {
 		{
 				.flags = INPUT_DEVICE_ID_MATCH_EVBIT,
@@ -263,38 +172,14 @@ static int keycombo_probe(struct platform_device *pdev)
 	int ret;
 	int key, *keyp;
 	struct keycombo_state *state;
-	struct keycombo_platform_data *pdata;
+	struct keycombo_platform_data *pdata = pdev->dev.platform_data;
 
-	KEY_LOGI("%s: +++\n", __func__);
-
-	if (pdev->dev.of_node) {
-		pdata = kzalloc(sizeof(struct keycombo_platform_data), GFP_KERNEL);
-		if (!pdata) {
-			KEY_LOGE("[KEY] fail to allocate keycombo_platform_data\n");
-			ret = -ENOMEM;
-			goto err_get_pdata_fail;
-		}
-		ret = keycombo_parse_dt(pdev->dev.of_node, pdata);
-		if (ret < 0) {
-			KEY_LOGE("[KEY] keycombo_parse_dt fail\n");
-			ret = -ENOMEM;
-			goto err_parse_fail;
-		}
-	} else {
-		pdata = pdev->dev.platform_data;
-		if(!pdata) {
-			KEY_LOGE("[KEY] keycombo_platform_data does not exist\n");
-			ret = -ENOMEM;
-			goto err_get_pdata_fail;
-		}
-	}
+	if (!pdata)
+		return -EINVAL;
 
 	state = kzalloc(sizeof(*state), GFP_KERNEL);
-	if (!state) {
-		KEY_LOGE("[KEY] fail to allocate keycombo_state\n");
-		ret = -ENOMEM;
-		goto err_parse_fail;
-	}
+	if (!state)
+		return -ENOMEM;
 
 	spin_lock_init(&state->lock);
 	keyp = pdata->keys_down;
@@ -315,11 +200,8 @@ static int keycombo_probe(struct platform_device *pdev)
 	}
 
 	state->wq = alloc_ordered_workqueue("keycombo", 0);
-	if (!state->wq) {
-		KEY_LOGE("[KEY] fail to allocate keycombo workqueue\n");
-		ret = -ENOMEM;
-		goto err_wq_alloc_fail;
-	}
+	if (!state->wq)
+		return -ENOMEM;
 
 	state->priv = pdata->priv;
 
@@ -342,23 +224,11 @@ static int keycombo_probe(struct platform_device *pdev)
 	state->input_handler.id_table = keycombo_ids;
 	ret = input_register_handler(&state->input_handler);
 	if (ret) {
-		KEY_LOGE("[KEY] fail to register keycombo input handler\n");
-		goto err_input_handler_fail;
+		kfree(state);
+		return ret;
 	}
 	platform_set_drvdata(pdev, state);
-
-	KEY_LOGI("%s: ---\n", __func__);
 	return 0;
-
-err_input_handler_fail:
-	destroy_workqueue(state->wq);
-err_wq_alloc_fail:
-	kfree(state);
-err_parse_fail:
-	if (pdev->dev.of_node)
-		kfree(pdata);
-err_get_pdata_fail:
-	return ret;
 }
 
 int keycombo_remove(struct platform_device *pdev)
@@ -370,23 +240,11 @@ int keycombo_remove(struct platform_device *pdev)
 	return 0;
 }
 
-#ifdef CONFIG_OF
-static const struct of_device_id keycombo_mttable[] = {
-	{ .compatible = KEYCOMBO_NAME},
-	{},
-};
-#else
-#define keycombo_mttable NULL
-#endif
 
 struct platform_driver keycombo_driver = {
-	.probe = keycombo_probe,
-	.remove = keycombo_remove,
-	.driver = {
-		.name = KEYCOMBO_NAME,
-		.owner = THIS_MODULE,
-		.of_match_table = keycombo_mttable,
-	},
+		.driver.name = KEYCOMBO_NAME,
+		.probe = keycombo_probe,
+		.remove = keycombo_remove,
 };
 
 static int __init keycombo_init(void)
@@ -401,11 +259,3 @@ static void __exit keycombo_exit(void)
 
 module_init(keycombo_init);
 module_exit(keycombo_exit);
-
-static int __init vzw_key_enable_flag(char *str)
-{
-	int ret = kstrtouint(str, 0, &vzw_key_flag);
-	pr_info("vzw_key_enable %d: %d from %s",
-			ret, vzw_key_flag, str);
-	return ret;
-} early_param("vzw_key_enable", vzw_key_enable_flag);

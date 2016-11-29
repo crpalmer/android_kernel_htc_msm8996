@@ -1241,8 +1241,8 @@ static int qpnp_pin_reg_attr(enum qpnp_pin_param_type type,
 		break;
 	case Q_PIN_CFG_DTEST_SEL:
 		if (is_gpio_lv_mv(q_spec)) {
-			cfg->shift = Q_REG_LV_MV_DTEST_SEL_SHIFT;
-			cfg->mask = Q_REG_LV_MV_DTEST_SEL_MASK;
+			cfg->shift = Q_REG_LV_MV_DTEST_SEL_CFG_SHIFT;
+			cfg->mask = Q_REG_LV_MV_DTEST_SEL_CFG_MASK;
 		} else {
 			cfg->shift = Q_REG_DTEST_SEL_SHIFT;
 			cfg->mask = Q_REG_DTEST_SEL_MASK;

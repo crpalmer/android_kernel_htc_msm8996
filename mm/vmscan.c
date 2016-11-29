@@ -47,7 +47,6 @@
 #include <linux/prefetch.h>
 #include <linux/printk.h>
 #include <linux/debugfs.h>
-#include <linux/jiffies.h>
 
 #include <asm/tlbflush.h>
 #include <asm/div64.h>
@@ -2641,11 +2640,6 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 	unsigned long total_scanned = 0;
 	unsigned long writeback_threshold;
 	bool zones_reclaimable;
-	struct reclaim_state *reclaim_state = current->reclaim_state;
-	unsigned long start_jiffies = jiffies;
-
-	if (reclaim_state)
-		reclaim_state->trigger_lmk = 0;
 
 	delayacct_freepages_start();
 
@@ -2688,30 +2682,6 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 	} while (--sc->priority >= 0);
 
 	delayacct_freepages_end();
-
-	if (reclaim_state) {
-		unsigned int msecs_age = jiffies_to_msecs(jiffies - start_jiffies);
-		if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
-			count_vm_event(ALLOCSTALL_HORDER);
-
-		if (msecs_age >= FOREGROUND_RECLAIM_1000MS)
-			count_vm_event(ALLOCSTALL_1000);
-		else if (msecs_age >= FOREGROUND_RECLAIM_500MS)
-			count_vm_event(ALLOCSTALL_500);
-		else if (msecs_age >= FOREGROUND_RECLAIM_250MS)
-			count_vm_event(ALLOCSTALL_250);
-		else if (msecs_age >= FOREGROUND_RECLAIM_100MS)
-			count_vm_event(ALLOCSTALL_100);
-
-		if ((reclaim_state->trigger_lmk && sc->order >= 2) || msecs_age >= FOREGROUND_RECLAIM_500MS ||
-				sc->order > PAGE_ALLOC_COSTLY_ORDER) {
-			pr_warn("%s(%d:%d): direct reclaim alloc order:%d gfp:0x%x, reclaim %lu in %d.%03ds pri %d, scan %lu, trigger lmk %d times\n",
-					current->comm, current->tgid, current->pid,
-					sc->order, sc->gfp_mask, sc->nr_reclaimed, msecs_age / 1000, msecs_age % 1000, sc->priority, total_scanned,
-					reclaim_state->trigger_lmk);
-			dump_stack();
-		}
-	}
 
 	if (sc->nr_reclaimed)
 		return sc->nr_reclaimed;

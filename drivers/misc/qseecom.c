@@ -1953,7 +1953,7 @@ static int qseecom_load_app(struct qseecom_dev_handle *data, void __user *argp)
 		return -EFAULT;
 	}
 
-	/* Check and load cmnlib *
+	/* Check and load cmnlib */
 	mutex_lock(&cmnlib_access_lock);
 	if (qseecom.qsee_version > QSEEE_VERSION_00) {
 		if (!qseecom.commonlib_loaded &&

@@ -338,7 +338,8 @@ long audio_in_ioctl(struct file *file,
 			rc = -EINVAL;
 			break;
 		}
-		if (cfg.buffer_size > MAX_BUFFER_SIZE) {
+		if ((cfg.buffer_size > FRAME_SIZE) ||
+			(cfg.buffer_count != FRAME_NUM)) {
 			rc = -EINVAL;
 			break;
 		}

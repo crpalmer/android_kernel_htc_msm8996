@@ -3201,6 +3201,7 @@ static int silabs_fm_vidioc_s_tuner(struct file *file, void *priv,
 static int silabs_fm_vidioc_g_tuner(struct file *file, void *priv,
 		struct v4l2_tuner *tuner)
 {
+	u8 rssi;
 	int retval = 0;
 	struct silabs_fm_device *radio = video_get_drvdata(video_devdata(file));
 
@@ -3217,6 +3218,7 @@ static int silabs_fm_vidioc_g_tuner(struct file *file, void *priv,
 		return -EINVAL;
 	}
 
+#if 0
 	mutex_lock(&radio->lock);
 
 	memset(radio->write_buf, 0, WRITE_REG_NUM);
@@ -3238,6 +3240,15 @@ static int silabs_fm_vidioc_g_tuner(struct file *file, void *priv,
 	/* rssi */
 	tuner->signal = radio->read_buf[4];
 	mutex_unlock(&radio->lock);
+#else
+	retval = get_rssi(radio, &rssi);
+	if (retval < 0) {
+		FMDERR("%s: getting rssi failed\n", __func__);
+		tuner->signal = 0;
+	} else {
+		tuner->signal = rssi;
+	}
+#endif
 
 	retval = get_property(radio,
 				FM_SEEK_BAND_BOTTOM_PROP,
@@ -3651,7 +3662,8 @@ static int silabs_fm_probe(struct i2c_client *client,
 		 */
 		if (PTR_ERR(vreg) == -EPROBE_DEFER) {
 			FMDERR("In %s, areg probe defer\n", __func__);
-			return PTR_ERR(vreg);
+			// VA is always on from battery
+			//return PTR_ERR(vreg);
 		}
 	}
 	/* private data allocation */

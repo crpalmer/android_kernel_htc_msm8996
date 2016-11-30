@@ -401,10 +401,10 @@ static int32_t msm_flash_off(struct msm_flash_ctrl_t *flash_ctrl,
 	if(htc_flash_front && htc_torch_front)
 	{
 	    if (flash_ctrl->pdev->id == 1)
-        {
+	{
 		    htc_flash_front(0, 0);
 		    htc_torch_front(0, 0);
-        }
+	}
 	}
 	else
 		pr_err("[CAM][FL]Front msm_flash_off, flashlight control is NULL\n");

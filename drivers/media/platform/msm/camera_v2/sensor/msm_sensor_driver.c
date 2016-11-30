@@ -47,7 +47,7 @@ uint32_t msm_sensor_driver_get_boardinfo(struct device_node *of_node)
     uint32_t boardinfo = 0;
     if (0 > of_property_read_u32(of_node, "qcom,camera-ver", &boardinfo))
     {
-        boardinfo = 0;
+	boardinfo = 0;
     }
     pr_info("%s: msm_sensor_get_boardinfo, read boardinfo:%d \n",__func__, boardinfo);
     return boardinfo;
@@ -108,7 +108,7 @@ static int imx377_htc_sysfs_init(void)
 		"failed\n");
 		kobject_del(android_imx377_htc);
 	}
-        pr_info("[CAM][Sensor main]%s %s\n", imx377_htcNAME, imx377_htcSize);
+	pr_info("[CAM][Sensor main]%s %s\n", imx377_htcNAME, imx377_htcSize);
 
 	return 0 ;
 }
@@ -132,7 +132,7 @@ static int s5k4e6_htc_sysfs_init(void)
 		"failed\n");
 		kobject_del(android_s5k4e6_htc);
 	}
-        pr_info("[CAM][Sensor front]%s %s %s\n",s5k4e6_htcVendor, s5k4e6_htcNAME, s5k4e6_htcSize);
+	pr_info("[CAM][Sensor front]%s %s %s\n",s5k4e6_htcVendor, s5k4e6_htcNAME, s5k4e6_htcSize);
 	return 0 ;
 }
 
@@ -155,7 +155,7 @@ static int ov12890_htc_sysfs_init(void)
 		"failed\n");
 		kobject_del(android_ov12890_htc);
 	}
-        pr_info("[CAM][Sensor main]%s %s\n", ov12890_htcNAME, ov12890_htcSize);
+	pr_info("[CAM][Sensor main]%s %s\n", ov12890_htcNAME, ov12890_htcSize);
 
 	return 0 ;
 }
@@ -179,7 +179,7 @@ static int ov12890eco_htc_sysfs_init(void)
 		"failed\n");
 		kobject_del(android_ov12890eco_htc);
 	}
-        pr_info("[CAM][Sensor main]%s %s\n", ov12890eco_htcNAME, ov12890eco_htcSize);
+	pr_info("[CAM][Sensor main]%s %s\n", ov12890eco_htcNAME, ov12890eco_htcSize);
 
 	return 0 ;
 }
@@ -626,7 +626,7 @@ static int32_t msm_sensor_get_power_down_settings(void *setting,
 	struct device_node *of_node = g_sctrl[slave_info->camera_id]->of_node;
 	struct msm_sensor_power_setting *pu_temp = NULL;
 	int index = 0;
-        hw_version = msm_sensor_driver_get_boardinfo(of_node);
+	hw_version = msm_sensor_driver_get_boardinfo(of_node);
 
 	/* DOWN */
 	size_down = slave_info->power_setting_array.size_down;
@@ -679,7 +679,7 @@ static int32_t msm_sensor_get_power_down_settings(void *setting,
 		pu_temp = kzalloc(sizeof(*pu_temp) * size_down, GFP_KERNEL);
 		if (!pu_temp) {
 		pr_err("failed: power_down pu_temp no memory power_setting");
-                kfree(pd);
+		kfree(pd);
 		return -EFAULT;
 		}
 		index = 0;
@@ -720,13 +720,13 @@ static int32_t msm_sensor_get_power_down_settings(void *setting,
 			}
 		    }
 		}
-                else
-                {
-                    pr_err("[CAM]Error, Down wrong HW version");
-                    kfree(pd);
-                    return -EFAULT;
-                }
-                power_info->power_down_setting = pu_temp;
+		else
+		{
+		    pr_err("[CAM]Error, Down wrong HW version");
+		    kfree(pd);
+		    return -EFAULT;
+		}
+		power_info->power_down_setting = pu_temp;
 		power_info->power_down_setting_size = size_down -1 ;
 		kfree(pd);
 	}
@@ -758,7 +758,7 @@ static int32_t msm_sensor_get_power_up_settings(void *setting,
 	struct device_node *of_node = g_sctrl[slave_info->camera_id]->of_node;
 	struct msm_sensor_power_setting *pu_temp = NULL;
 	int index = 0;
-        hw_version = msm_sensor_driver_get_boardinfo(of_node);
+	hw_version = msm_sensor_driver_get_boardinfo(of_node);
 	size = slave_info->power_setting_array.size;
 
 	/* Validate size */
@@ -800,7 +800,7 @@ static int32_t msm_sensor_get_power_up_settings(void *setting,
 		pu_temp = kzalloc(sizeof(*pu_temp) * size, GFP_KERNEL);
 		if (!pu_temp) {
 		pr_err("failed: power_up pu_temp no memory power_setting");
-                kfree(pu);
+		kfree(pu);
 		return -EFAULT;
 		}
 		index = 0;
@@ -841,12 +841,12 @@ static int32_t msm_sensor_get_power_up_settings(void *setting,
 			}
 		    }
 		}
-                else
-                {
-                    pr_err("[CAM]Error, UP wrong HW version");
-                    kfree(pu);
-                    return -EFAULT;
-                }
+		else
+		{
+		    pr_err("[CAM]Error, UP wrong HW version");
+		    kfree(pu);
+		    return -EFAULT;
+		}
 		power_info->power_setting = pu_temp;
 		power_info->power_setting_size = size - 1;
 		kfree(pu);
@@ -938,15 +938,15 @@ void msm_sensor_read_OTP(struct msm_camera_sensor_slave_info *sensor_slave_info,
 	{
 	    if(strncmp("imx377_htc", sensor_slave_info->sensor_name, sizeof("imx377_htc")) == 0)
 	    {
-            pr_err("[CAM]%s: PMEif_htc, return", __func__);
+	    pr_err("[CAM]%s: PMEif_htc, return", __func__);
 	    }
 	    else if(strncmp("ov12890_htc", sensor_slave_info->sensor_name, sizeof("ov12890_htc")) == 0)
 	    {
-            pr_err("[CAM]%s: PMEos_htc, return", __func__);
+	    pr_err("[CAM]%s: PMEos_htc, return", __func__);
 	    }
 	    else if(strncmp("ov12890eco_htc", sensor_slave_info->sensor_name, sizeof("ov12890eco_htc")) == 0)
 	    {
-            pr_err("[CAM]%s: PMEose_htc, return", __func__);
+	    pr_err("[CAM]%s: PMEose_htc, return", __func__);
 	    }
 	    else
 	    pr_err("[CAM]%s: %s, return", __func__, sensor_slave_info->sensor_name);
@@ -954,12 +954,12 @@ void msm_sensor_read_OTP(struct msm_camera_sensor_slave_info *sensor_slave_info,
 	}
 	if(strncmp("imx377_htc", sensor_slave_info->sensor_name, sizeof("imx377_htc")) == 0)
 	{
-            pr_err("[CAM]%s: PMEif_htc, match sensor name, use byte address", __func__);
+	    pr_err("[CAM]%s: PMEif_htc, match sensor name, use byte address", __func__);
 	    #ifdef CONFIG_COMPAT
 	    rc = s_ctrl->func_tbl->sensor_i2c_read_fuseid32(NULL, s_ctrl);
-            #else
-            rc = s_ctrl->func_tbl->sensor_i2c_read_fuseid(NULL, s_ctrl);
-            #endif
+	    #else
+	    rc = s_ctrl->func_tbl->sensor_i2c_read_fuseid(NULL, s_ctrl);
+	    #endif
 
 	    imx377_htc_sysfs_init();
 	    pr_err("[CAM]%s: PMEif_htc_sysfs_init done", __func__);
@@ -1330,7 +1330,7 @@ CSID_TG:
 	else
 	
 	pr_err("%s probe succeeded", slave_info->sensor_name);
-        msm_sensor_read_OTP(slave_info, s_ctrl);
+	msm_sensor_read_OTP(slave_info, s_ctrl);
 	s_ctrl->is_probe_succeed = 1;
 
 	if (strlen(slave_info->flash_name) == 0)

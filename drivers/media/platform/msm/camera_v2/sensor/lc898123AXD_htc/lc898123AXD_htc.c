@@ -75,9 +75,9 @@ struct file* msm_fopen(const char* path, int flags, int rights) {
     filp = filp_open(path, flags, rights);
     set_fs(oldfs);
     if(IS_ERR(filp)) {
-        err = PTR_ERR(filp);
+	err = PTR_ERR(filp);
     pr_err("[CAM]File Open Error:%s",path);
-        return NULL;
+	return NULL;
     }
     if(!filp->f_op){
     pr_err("[CAM]File Operation Method Error!!");
@@ -145,7 +145,7 @@ unsigned char htc_GyroReCalib(struct msm_sensor_ctrl_t *s_ctrl, int cam_id)
 	pr_info("[OIS_Cali]%s:E\n", __func__);
 
     if (g_s_ctrl == NULL)
-        return -1;
+	return -1;
     WitTim(100);
 
     GYRO_Cali_init(s_ctrl);
@@ -157,8 +157,8 @@ unsigned char htc_GyroReCalib(struct msm_sensor_ctrl_t *s_ctrl, int cam_id)
 
 	if (rc != 0)
 	{
-        pr_info("[OIS_Cali]%s: RamWrite32A = %d return -1\n",__func__, rc);
-        return -1;
+	pr_info("[OIS_Cali]%s: RamWrite32A = %d return -1\n",__func__, rc);
+	return -1;
 	}
 
 	while( UcSndDat ) {
@@ -195,33 +195,33 @@ unsigned char htc_GyroReCalib(struct msm_sensor_ctrl_t *s_ctrl, int cam_id)
 
     if (cam_id == 0)
     {
-        fp=msm_fopen (m_path, O_CREAT|O_RDWR|O_TRUNC, 0666);
+	fp=msm_fopen (m_path, O_CREAT|O_RDWR|O_TRUNC, 0666);
     } else if (cam_id == 1)
     {
-        fp=msm_fopen (f_path, O_CREAT|O_RDWR|O_TRUNC, 0666);
+	fp=msm_fopen (f_path, O_CREAT|O_RDWR|O_TRUNC, 0666);
     }else
-        pr_info("Can't write result.\n");
+	pr_info("Can't write result.\n");
 
     if (fp != NULL)
     {
-        count += sprintf(gyro_mem + count,"UcSndDat : %u \n", UcSndDat);
-        count += sprintf(gyro_mem + count,"FW Ver = %x \n", UlFWDat);
-        count += sprintf(gyro_mem + count,"pReCalib->SsFctryOffX = %d (%#x), pReCalib->SsFctryOffY = %d (%#x) \n", pReCalib.SsFctryOffX, pReCalib.SsFctryOffX, pReCalib.SsFctryOffY, pReCalib.SsFctryOffY);
-        count += sprintf(gyro_mem + count,"pReCalib->SsRecalOffX = %d (%#x), pReCalib->SsRecalOffY = %d (%#x) \n", pReCalib.SsRecalOffX, pReCalib.SsRecalOffX, pReCalib.SsRecalOffY, pReCalib.SsRecalOffY);
-        count += sprintf(gyro_mem + count,"pReCalib->SsDiffX = %d (%#x), pReCalib->SsDiffY = %d (%#x) \n", pReCalib.SsDiffX, pReCalib.SsDiffX, pReCalib.SsDiffY, pReCalib.SsDiffY);
-        msm_fwrite (fp, 0, gyro_mem, strlen(gyro_mem)+1);
-        msm_fclose (fp);
+	count += sprintf(gyro_mem + count,"UcSndDat : %u \n", UcSndDat);
+	count += sprintf(gyro_mem + count,"FW Ver = %x \n", UlFWDat);
+	count += sprintf(gyro_mem + count,"pReCalib->SsFctryOffX = %d (%#x), pReCalib->SsFctryOffY = %d (%#x) \n", pReCalib.SsFctryOffX, pReCalib.SsFctryOffX, pReCalib.SsFctryOffY, pReCalib.SsFctryOffY);
+	count += sprintf(gyro_mem + count,"pReCalib->SsRecalOffX = %d (%#x), pReCalib->SsRecalOffY = %d (%#x) \n", pReCalib.SsRecalOffX, pReCalib.SsRecalOffX, pReCalib.SsRecalOffY, pReCalib.SsRecalOffY);
+	count += sprintf(gyro_mem + count,"pReCalib->SsDiffX = %d (%#x), pReCalib->SsDiffY = %d (%#x) \n", pReCalib.SsDiffX, pReCalib.SsDiffX, pReCalib.SsDiffY, pReCalib.SsDiffY);
+	msm_fwrite (fp, 0, gyro_mem, strlen(gyro_mem)+1);
+	msm_fclose (fp);
     }else
-        pr_info("Can't write result.\n");
+	pr_info("Can't write result.\n");
 
 	if (UcSndDat != 0)
 	{
-        GYRO_Cali_release();
+	GYRO_Cali_release();
 		return (int)UcSndDat;
 	}else if(pReCalib.SsDiffX >= 0x226 || pReCalib.SsDiffY >= 0x226)
 	{
 	    pr_info("[OIS_Cali]%s:Threadhold check failed.\n", __func__);
-        GYRO_Cali_release();
+	GYRO_Cali_release();
 		return -1;
 	}
 	else
@@ -244,8 +244,8 @@ short htc_WrGyroOffsetData( void )
 
 	if (rc != 0)
 	{
-        pr_info("[OIS_Cali]%s i2c read/write fail. return -1\n", __func__);
-        return -1;
+	pr_info("[OIS_Cali]%s i2c read/write fail. return -1\n", __func__);
+	return -1;
 	}
 
 	
@@ -257,9 +257,9 @@ short htc_WrGyroOffsetData( void )
 	iRetVal = Calibration_VerifyUpdate_PreRead();
 	if( iRetVal != 0 )
     {
-        pr_info("[OIS_Cali]%s: Calibration_VerifyUpdate_PreRead failed. iRetVal = %d\n", __func__, iRetVal);
-        GYRO_Cali_release();
-        return( iRetVal );
+	pr_info("[OIS_Cali]%s: Calibration_VerifyUpdate_PreRead failed. iRetVal = %d\n", __func__, iRetVal);
+	GYRO_Cali_release();
+	return( iRetVal );
     }
 
 	_GET_UINT32( UlCurrX,											GYRO_OFFSET_VALUE_X ) ;
@@ -801,17 +801,17 @@ int htc_checkFWUpdate(struct msm_sensor_ctrl_t *s_ctrl)
 
     if((g_s_ctrl->id == 0)&&((UlFWDat&0xF) >= (BASEVWNUM_M&0xF))&&((VERNUM_M&0xF)>(UlFWDat&0xF))&&((UlFWDat&0xF)!=(VERNUM_M&0xF)))
     {
-        pr_info("[OIS_Cali]%s:main camera FW update. %x -> %x", __func__, UlFWDat, VERNUM_M);
-        rc = FlashUpdateM();
-        if(rc!=0)
-            pr_info("[OIS_Cali]%s:FlashUpdateM = %d  fail.", __func__, rc);
+	pr_info("[OIS_Cali]%s:main camera FW update. %x -> %x", __func__, UlFWDat, VERNUM_M);
+	rc = FlashUpdateM();
+	if(rc!=0)
+	    pr_info("[OIS_Cali]%s:FlashUpdateM = %d  fail.", __func__, rc);
     }else if ((g_s_ctrl->id == 1)&&((UlFWDat&0xF) >= (BASEVWNUM_F&0xF))&&((VERNUM_F&0xF)>(UlFWDat&0xF))&&((UlFWDat&0xF)!=(VERNUM_F&0xF))){
-        pr_info("[OIS_Cali]%s:front camera FW update. %x -> %x", __func__, UlFWDat, VERNUM_F);
-        rc = FlashUpdateF();
-        if(rc!=0)
-            pr_info("[OIS_Cali]%s:FlashUpdateF = %d  fail.", __func__, rc);
+	pr_info("[OIS_Cali]%s:front camera FW update. %x -> %x", __func__, UlFWDat, VERNUM_F);
+	rc = FlashUpdateF();
+	if(rc!=0)
+	    pr_info("[OIS_Cali]%s:FlashUpdateF = %d  fail.", __func__, rc);
     }else
-        pr_info("[OIS_Cali]%s:FlashUpdate camera ID %d no need to update.", __func__, g_s_ctrl->id);
+	pr_info("[OIS_Cali]%s:FlashUpdate camera ID %d no need to update.", __func__, g_s_ctrl->id);
 
     GYRO_Cali_release();
 
@@ -1013,11 +1013,11 @@ void CRC16_main( unsigned char *p, int Num )
 			data = temp & 0x00000001;	
 			temp = temp >> 1;
 
-            tmp0 = ((CRC_Reg >> 15) ^ data) & 0x00000001;
-            tmp5 = (((tmp0 << 4) ^ CRC_Reg) & 0x00000010) << 1;
-            tmp12 = (((tmp0 << 11) ^ CRC_Reg) & 0x00000800) << 1;
-            CRC_Reg = (CRC_Reg << 1) & 0x0000efde;
-            CRC_Reg = CRC_Reg | tmp0 | tmp5 | tmp12;
+	    tmp0 = ((CRC_Reg >> 15) ^ data) & 0x00000001;
+	    tmp5 = (((tmp0 << 4) ^ CRC_Reg) & 0x00000010) << 1;
+	    tmp12 = (((tmp0 << 11) ^ CRC_Reg) & 0x00000800) << 1;
+	    CRC_Reg = (CRC_Reg << 1) & 0x0000efde;
+	    CRC_Reg = CRC_Reg | tmp0 | tmp5 | tmp12;
 		}
 	}
 }
@@ -1075,8 +1075,8 @@ unsigned char ReadWPB( void )
     unsigned int UlReadVal, UlCnt=0;
 #endif
 	do{
-        IORead32A( IOPLEVR  , &UlReadVal ) ;
-        pr_info("%s:UlReadVal = %u UlCnt = %u \n", __func__, UlReadVal, UlCnt);
+	IORead32A( IOPLEVR  , &UlReadVal ) ;
+	pr_info("%s:UlReadVal = %u UlCnt = %u \n", __func__, UlReadVal, UlCnt);
 		if( (UlReadVal & 0x0400) != 0 )	return ( 1 ) ;
 		WitTim( 1 );		
 	}while ( UlCnt++ < 10 );
@@ -1135,8 +1135,8 @@ int CntWrt( unsigned char * PcSetDat, unsigned short UsDatNum)
     rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write_seq(s_ctrl->sensor_i2c_client, PcSetDat[0], &PcSetDat[1], UsDatNum-1);
     s_ctrl->sensor_i2c_client->addr_type = temp;
     if (rc < 0) {
-        pr_err("%s:i2c write sequence error:%d\n", __func__, rc);
-        return rc;
+	pr_err("%s:i2c write sequence error:%d\n", __func__, rc);
+	return rc;
     }
     return rc;
 }
@@ -1152,70 +1152,70 @@ int CntRd( unsigned int addr, unsigned char * PcSetDat, unsigned short UsDatNum 
     s_ctrl->sensor_i2c_client->addr_type = temp;
 
     if (rc < 0) {
-        pr_err("%s:i2c write sequence error:%d\n", __func__, rc);
-        return rc;
+	pr_err("%s:i2c write sequence error:%d\n", __func__, rc);
+	return rc;
     }
     return rc;
 }
 
 unsigned short MakeNVRSel( unsigned short UsAddress )
 {
-        
-        
-        
-        return 1 << ((UsAddress >> 8) & 0x03);
+	
+	
+	
+	return 1 << ((UsAddress >> 8) & 0x03);
 }
  
 unsigned int MakeNVRDat( unsigned short UsAddress, unsigned char UcData )
 {
-        
-        
-        
-        return (unsigned int)UcData << (((UsAddress >> 8) & 0x03) * 8);
+	
+	
+	
+	return (unsigned int)UcData << (((UsAddress >> 8) & 0x03) * 8);
 }
  
 unsigned char MakeDatNVR( unsigned short UsAddress, unsigned int UlData )
 {
-        return (unsigned char)((UlData >> (((UsAddress >> 8) & 0x03) * 8)) & 0xFF);
+	return (unsigned char)((UlData >> (((UsAddress >> 8) & 0x03) * 8)) & 0xFF);
 }
  
 void WPBCtrl( unsigned char UcCtrl )
 {
     int rc = 0;
     pr_info("[OIS_Cali]%s:E\n", __func__);
-        if (UcCtrl == 0)
-        {       
-            rc = gpio_request_one(g_GYRO_info->flash_rw, 0, "flash_rw");
-            pr_info("[OIS_Cali]%s : Write Protect ON  flash_rw = %d\n", __func__, g_GYRO_info->flash_rw);
-            if (rc < 0)
-                pr_err("[OIS_Cali]%s:GPIO(%d) request failed", __func__,g_GYRO_info->flash_rw);
+	if (UcCtrl == 0)
+	{       
+	    rc = gpio_request_one(g_GYRO_info->flash_rw, 0, "flash_rw");
+	    pr_info("[OIS_Cali]%s : Write Protect ON  flash_rw = %d\n", __func__, g_GYRO_info->flash_rw);
+	    if (rc < 0)
+		pr_err("[OIS_Cali]%s:GPIO(%d) request failed", __func__,g_GYRO_info->flash_rw);
 
-            if (g_GYRO_info->flash_rw != 0){
-                gpio_set_value_cansleep(g_GYRO_info->flash_rw,0);
-                mdelay(5);
-                gpio_free(g_GYRO_info->flash_rw);
-            }
-            else
-                pr_err("[OIS_Cali]%s:GPIO(%d) g_GYRO_info->flash_rw failed\n", __func__, g_GYRO_info->flash_rw);
+	    if (g_GYRO_info->flash_rw != 0){
+		gpio_set_value_cansleep(g_GYRO_info->flash_rw,0);
+		mdelay(5);
+		gpio_free(g_GYRO_info->flash_rw);
+	    }
+	    else
+		pr_err("[OIS_Cali]%s:GPIO(%d) g_GYRO_info->flash_rw failed\n", __func__, g_GYRO_info->flash_rw);
 
-            pr_info("[OIS_Cali]%s:Write Protect ON \n", __func__);
-        } else {
-            
-            rc = gpio_request_one(g_GYRO_info->flash_rw, 0, "flash_rw");
-                pr_info("[OIS_Cali]%s:Write Protect OFF  flash_rw = %d\n", __func__,g_GYRO_info->flash_rw);
-            if (rc < 0)
-                pr_err("[OIS_Cali]%s:GPIO(%d) request failed", __func__,g_GYRO_info->flash_rw);
+	    pr_info("[OIS_Cali]%s:Write Protect ON \n", __func__);
+	} else {
+	    
+	    rc = gpio_request_one(g_GYRO_info->flash_rw, 0, "flash_rw");
+		pr_info("[OIS_Cali]%s:Write Protect OFF  flash_rw = %d\n", __func__,g_GYRO_info->flash_rw);
+	    if (rc < 0)
+		pr_err("[OIS_Cali]%s:GPIO(%d) request failed", __func__,g_GYRO_info->flash_rw);
 
-            if (g_GYRO_info->flash_rw != 0){
-                gpio_set_value_cansleep(g_GYRO_info->flash_rw,1);
-                mdelay(5);
-                gpio_free(g_GYRO_info->flash_rw);
-            }
-            else
-                pr_err("[OIS_Cali]%s:GPIO(%d) g_GYRO_info->flash_rw failed\n", __func__, g_GYRO_info->flash_rw);
+	    if (g_GYRO_info->flash_rw != 0){
+		gpio_set_value_cansleep(g_GYRO_info->flash_rw,1);
+		mdelay(5);
+		gpio_free(g_GYRO_info->flash_rw);
+	    }
+	    else
+		pr_err("[OIS_Cali]%s:GPIO(%d) g_GYRO_info->flash_rw failed\n", __func__, g_GYRO_info->flash_rw);
 
-            pr_info("[OIS_Cali]%s:Write Protect OFF \n", __func__);
-        }
+	    pr_info("[OIS_Cali]%s:Write Protect OFF \n", __func__);
+	}
 }
 
 
@@ -1399,11 +1399,11 @@ void CRC16_main( unsigned char *p, int Num )
 			data = temp & 0x00000001;	
 			temp = temp >> 1;
 
-            tmp0 = ((CRC_Reg >> 15) ^ data) & 0x00000001;
-            tmp5 = (((tmp0 << 4) ^ CRC_Reg) & 0x00000010) << 1;
-            tmp12 = (((tmp0 << 11) ^ CRC_Reg) & 0x00000800) << 1;
-            CRC_Reg = (CRC_Reg << 1) & 0x0000efde;
-            CRC_Reg = CRC_Reg | tmp0 | tmp5 | tmp12;
+	    tmp0 = ((CRC_Reg >> 15) ^ data) & 0x00000001;
+	    tmp5 = (((tmp0 << 4) ^ CRC_Reg) & 0x00000010) << 1;
+	    tmp12 = (((tmp0 << 11) ^ CRC_Reg) & 0x00000800) << 1;
+	    CRC_Reg = (CRC_Reg << 1) & 0x0000efde;
+	    CRC_Reg = CRC_Reg | tmp0 | tmp5 | tmp12;
 		}
 	}
 }

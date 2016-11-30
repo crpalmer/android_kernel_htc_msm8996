@@ -2133,7 +2133,7 @@ int msm_isp_axi_halt(struct vfe_device *vfe_dev,
 
 	if (atomic_read(&vfe_dev->error_info.overflow_state) ==
 		OVERFLOW_DETECTED) {
-		pr_err("%s: VFE%d already halted, direct return\n",
+		ISP_DBG("%s: VFE%d already halted, direct return\n",
 			__func__, vfe_dev->pdev->id);
 		return rc;
 	}
@@ -2172,7 +2172,6 @@ int msm_isp_axi_reset(struct vfe_device *vfe_dev,
 	uint32_t bufq_handle = 0, bufq_id = 0;
 	struct msm_isp_timestamp timestamp;
 	unsigned long flags;
-        pr_err("%s: E\n", __func__);
 
 	if (!reset_cmd) {
 		pr_err("%s: NULL pointer reset cmd %p\n", __func__, reset_cmd);
@@ -2230,7 +2229,7 @@ int msm_isp_axi_reset(struct vfe_device *vfe_dev,
 
 	if (rc < 0)
 		pr_err("%s Error! reset hw Timed out\n", __func__);
-        pr_err("%s: X\n", __func__);
+
 	return rc;
 }
 
@@ -2242,7 +2241,6 @@ int msm_isp_axi_restart(struct vfe_device *vfe_dev,
 	struct msm_vfe_axi_shared_data *axi_data = &vfe_dev->axi_data;
 	uint32_t wm_reload_mask = 0x0;
 	unsigned long flags;
-        pr_err("%s: E\n", __func__);
 
 	vfe_dev->buf_mgr->frameId_mismatch_recovery = 0;
 	for (i = 0, j = 0; j < axi_data->num_active_stream &&
@@ -2265,7 +2263,6 @@ int msm_isp_axi_restart(struct vfe_device *vfe_dev,
 	if (rc < 0)
 		pr_err("%s Error restarting HW\n", __func__);
 
-        pr_err("%s: X\n", __func__);
 	return rc;
 }
 

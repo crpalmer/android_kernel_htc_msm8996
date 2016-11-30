@@ -27,9 +27,9 @@
 #define GET_UINT32(n,b,i)                       \
 {                                               \
     (n) = ( (UINT32) (b)[(i)    ]       )       \
-        | ( (UINT32) (b)[(i) + 1] <<  8 )       \
-        | ( (UINT32) (b)[(i) + 2] << 16 )       \
-        | ( (UINT32) (b)[(i) + 3] << 24 );      \
+	| ( (UINT32) (b)[(i) + 1] <<  8 )       \
+	| ( (UINT32) (b)[(i) + 2] << 16 )       \
+	| ( (UINT32) (b)[(i) + 3] << 24 );      \
 }
 
 #define PUT_UINT32(n,b,i)                       \
@@ -187,29 +187,29 @@ void md5_update( md5_context *ctx, UINT8 *input, UINT32 length )
     ctx->total[0] &= 0xFFFFFFFF;
 
     if( ctx->total[0] < length )
-        ctx->total[1]++;
+	ctx->total[1]++;
 
     if( left && length >= fill )
     {
-        memcpy( (void *) (ctx->buffer + left),
-                (void *) input, fill );
-        md5_process( ctx, ctx->buffer );
-        length -= fill;
-        input  += fill;
-        left = 0;
+	memcpy( (void *) (ctx->buffer + left),
+		(void *) input, fill );
+	md5_process( ctx, ctx->buffer );
+	length -= fill;
+	input  += fill;
+	left = 0;
     }
 
     while( length >= 64 )
     {
-        md5_process( ctx, input );
-        length -= 64;
-        input  += 64;
+	md5_process( ctx, input );
+	length -= 64;
+	input  += 64;
     }
 
     if( length )
     {
-        memcpy( (void *) (ctx->buffer + left),
-                (void *) input, length );
+	memcpy( (void *) (ctx->buffer + left),
+		(void *) input, length );
     }
 }
 
@@ -228,7 +228,7 @@ void md5_finish( md5_context *ctx, UINT8 digest[16] )
     UINT8 msglen[8];
 
     high = ( ctx->total[0] >> 29 )
-         | ( ctx->total[1] <<  3 );
+	 | ( ctx->total[1] <<  3 );
     low  = ( ctx->total[0] <<  3 );
 
     PUT_UINT32( low,  msglen, 0 );

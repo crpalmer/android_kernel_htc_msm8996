@@ -79,20 +79,20 @@ unsigned char *get_cam_awb_cal( void )
      p_size = 0;
      p_data = NULL;
      if (offset) {
-          
-          p_data = (unsigned char*) of_get_property(offset, CAM_AWB_CAL_DATA, &p_size);
+	  
+	  p_data = (unsigned char*) of_get_property(offset, CAM_AWB_CAL_DATA, &p_size);
 #ifdef CAM_AWB_CAL_DEBUG
-          if (p_data) {
+	  if (p_data) {
 		  printk("[CAM]size = %d ", p_size);
-               for (i = 0; i < p_size; ++i)
-                   printk("%02x ", p_data[i]);
-          }
+	       for (i = 0; i < p_size; ++i)
+		   printk("%02x ", p_data[i]);
+	  }
 #endif
      }
-        if (p_data != NULL) {
+	if (p_data != NULL) {
 		gCAM_AWB_CAL_LEN = p_size;
-            memcpy(cam_awb_ram, p_data, p_size);
-        }
+	    memcpy(cam_awb_ram, p_data, p_size);
+	}
 
 	return( cam_awb_ram );
 }

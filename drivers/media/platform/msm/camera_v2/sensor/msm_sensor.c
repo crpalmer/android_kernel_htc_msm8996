@@ -46,13 +46,13 @@ int htc_ois_calibration(struct msm_sensor_ctrl_t *s_ctrl, int cam_id)
     
     rc = htc_GyroReCalib(s_ctrl, cam_id);
     if (rc != 0)
-          pr_err("htc_GyroReCalib fail.\n");
+	  pr_err("htc_GyroReCalib fail.\n");
     else{
-        rc = htc_WrGyroOffsetData();
-        if (rc != 0)
-            pr_err("htc_WrGyroOffsetData fail.\n");
-        else
-            pr_info("Gyro calibration success.\n");
+	rc = htc_WrGyroOffsetData();
+	if (rc != 0)
+	    pr_err("htc_WrGyroOffsetData fail.\n");
+	else
+	    pr_info("Gyro calibration success.\n");
     }
 
 	
@@ -76,11 +76,11 @@ int htc_ois_FWupdate(struct msm_sensor_ctrl_t *s_ctrl)
 
     if (m_first ==0||f_first==0)
     {
-        rc = htc_checkFWUpdate(s_ctrl);
-        if (s_ctrl->id ==0)
-            m_first = 1;
-        if (s_ctrl->id ==1)
-            f_first = 1;
+	rc = htc_checkFWUpdate(s_ctrl);
+	if (s_ctrl->id ==0)
+	    m_first = 1;
+	if (s_ctrl->id ==1)
+	    f_first = 1;
     }
 
 	
@@ -511,172 +511,172 @@ int msm_sensor_read_fuseid(struct sensorb_cfg_data *cdata, struct msm_sensor_ctr
     {
 		static int front_first= true;
 		if(front_first == true)
-        {
-            front_first= false;
-            
-            for (i = 53 ; i >= 51 ; i--)
-            {
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0xFCFC, 0x4000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+	{
+	    front_first= false;
+	    
+	    for (i = 53 ; i >= 51 ; i--)
+	    {
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0xFCFC, 0x4000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0100, 0x0100, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0100, 0x0100, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
-                msleep(10);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6028, 0x2000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		msleep(10);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6028, 0x2000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0x000B, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, i, MSM_CAMERA_I2C_BYTE_DATA);
-                if (rc < 0)
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0x000B, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0X0009, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, 0X01, MSM_CAMERA_I2C_BYTE_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0A00, 0X0100, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, i, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                msleep(5);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602C, 0X2000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0X0009, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, 0X01, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0A00, 0X0100, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                
-                for (j = 0 ; j <4; j++)
-                {
-                    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602E, id_addr[j], MSM_CAMERA_I2C_WORD_DATA);
-                    if (rc < 0)
-                        pr_err("%s: i2c_write failed\n", __func__);
-                    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, 0x6F12, &read_data, MSM_CAMERA_I2C_BYTE_DATA);
-                    if (rc < 0)
-                        pr_err("%s: i2c_read failed\n", __func__);
-
-                    front_id_data[j] = read_data & 0xff;
-
-                    if (read_data)
-                        SN_valid_page = i;
-                }
-
-                if (SN_valid_page!=-1)
-                    break;
-
-            }
-            
-            for (i = 50 ; i >= 48 ; i--)
-            {
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0xFCFC, 0x4000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0100, 0x0100, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                msleep(10);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6028, 0x2000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0x000B, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		msleep(5);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602C, 0X2000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, i, MSM_CAMERA_I2C_BYTE_DATA);
-                if (rc < 0)
+		
+		for (j = 0 ; j <4; j++)
+		{
+		    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602E, id_addr[j], MSM_CAMERA_I2C_WORD_DATA);
+		    if (rc < 0)
+			pr_err("%s: i2c_write failed\n", __func__);
+		    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, 0x6F12, &read_data, MSM_CAMERA_I2C_BYTE_DATA);
+		    if (rc < 0)
+			pr_err("%s: i2c_read failed\n", __func__);
+
+		    front_id_data[j] = read_data & 0xff;
+
+		    if (read_data)
+			SN_valid_page = i;
+		}
+
+		if (SN_valid_page!=-1)
+		    break;
+
+	    }
+	    
+	    for (i = 50 ; i >= 48 ; i--)
+	    {
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0xFCFC, 0x4000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0100, 0x0100, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		msleep(10);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6028, 0x2000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0x000B, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0X0009, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, 0X01, MSM_CAMERA_I2C_BYTE_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0A00, 0X0100, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, i, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                msleep(5);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602C, 0X2000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0X0009, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, 0X01, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0A00, 0X0100, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                
-                for (j = 0 ; j <10; j++)
-                {
-                    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602E, id_addr[j], MSM_CAMERA_I2C_WORD_DATA);
-                    if (rc < 0)
-                        pr_err("%s: i2c_write failed\n", __func__);
-                    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, 0x6F12, &read_data, MSM_CAMERA_I2C_BYTE_DATA);
-                    if (rc < 0)
-                        pr_err("%s: i2c_read failed\n", __func__);
+		msleep(5);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602C, 0X2000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
 
-                    front_otp_data[j] = read_data & 0xff;
+		
+		for (j = 0 ; j <10; j++)
+		{
+		    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602E, id_addr[j], MSM_CAMERA_I2C_WORD_DATA);
+		    if (rc < 0)
+			pr_err("%s: i2c_write failed\n", __func__);
+		    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, 0x6F12, &read_data, MSM_CAMERA_I2C_BYTE_DATA);
+		    if (rc < 0)
+			pr_err("%s: i2c_read failed\n", __func__);
 
-                    if (read_data)
-                        valid_page = i;
+		    front_otp_data[j] = read_data & 0xff;
 
-                }
-                if (valid_page!=-1)
-                    break;
-            }
-        }
-        if (cdata != NULL) {
-            cdata->cfg.fuse.fuse_id_word1 = front_id_data[0];
-            cdata->cfg.fuse.fuse_id_word2 = front_id_data[1];
-            cdata->cfg.fuse.fuse_id_word3 = front_id_data[2];
-            cdata->cfg.fuse.fuse_id_word4 = front_id_data[3];
-            pr_info("s5k4e6_htc: fuse->fuse_id : 0x%x 0x%x 0x%x 0x%x\n",
-                    cdata->cfg.fuse.fuse_id_word1,
-                    cdata->cfg.fuse.fuse_id_word2,
-                    cdata->cfg.fuse.fuse_id_word3,
-                    cdata->cfg.fuse.fuse_id_word4);
-            cdata->lens_id = front_otp_data[1];
-            
-            cdata->af_value.VCM_VENDOR = front_otp_data[0];
-            cdata->af_value.MODULE_ID_AB = cdata->cfg.fuse.fuse_id_word1;
-            cdata->af_value.VCM_VENDOR_ID_VERSION = front_otp_data[4];
-            cdata->af_value.AF_INF_MSB = front_otp_data [5];
-            cdata->af_value.AF_INF_LSB = front_otp_data [6];
-            cdata->af_value.AF_MACRO_MSB = front_otp_data [7];
-            cdata->af_value.AF_MACRO_LSB = front_otp_data [8];
-            strlcpy(cdata->af_value.ACT_NAME, "lc898123", sizeof("lc898123"));
-            pr_info("%s: s5k4e6_htcOTP Actuator Name = %s\n",__func__, cdata->af_value.ACT_NAME);
+		    if (read_data)
+			valid_page = i;
 
-            pr_info("%s: s5k4e6_htc OTP Module vendor = 0x%x\n",               __func__,  front_otp_data[0]);
-            pr_info("%s: s5k4e6_htc OTP LENS = 0x%x\n",                        __func__,  front_otp_data[1]);
-            pr_info("%s: s5k4e6_htc OTP Sensor Version = 0x%x\n",              __func__,  front_otp_data[2]);
-            pr_info("%s: s5k4e6_htc OTP Driver IC Vendor & Version = 0x%x\n",  __func__,  front_otp_data[3]);
-            pr_info("%s: s5k4e6_htc OTP Actuator vender ID & Version = 0x%x\n",__func__,  front_otp_data[4]);
-            pr_info("%s: s5k4e6_htc OTP Infinity position code (MSByte) = 0x%x\n", __func__,  cdata->af_value.AF_INF_MSB);
-            pr_info("%s: s5k4e6_htc OTP Infinity position code (LSByte) = 0x%x\n", __func__,  cdata->af_value.AF_INF_LSB);
-            pr_info("%s: s5k4e6_htc OTP Macro position code (MSByte) = 0x%x\n",    __func__,  cdata->af_value.AF_MACRO_MSB);
-            pr_info("%s: s5k4e6_htc OTP Macro position code (LSByte) = 0x%x\n",    __func__,  cdata->af_value.AF_MACRO_LSB);
-        }
-        else {
-            pr_info("%s: s5k4e6_htc OTP Module vendor = 0x%x\n",               __func__,  front_otp_data[0]);
-            pr_info("%s: s5k4e6_htc OTP LENS = 0x%x\n",                        __func__,  front_otp_data[1]);
-            pr_info("%s: s5k4e6_htc OTP Sensor Version = 0x%x\n",              __func__,  front_otp_data[2]);
-            pr_info("%s: s5k4e6_htc OTP Driver IC Vendor & Version = 0x%x\n",  __func__,  front_otp_data[3]);
-            pr_info("%s: s5k4e6_htc OTP Actuator vender ID & Version = 0x%x\n",__func__,  front_otp_data[4]);
-        }
-        return rc;
+		}
+		if (valid_page!=-1)
+		    break;
+	    }
+	}
+	if (cdata != NULL) {
+	    cdata->cfg.fuse.fuse_id_word1 = front_id_data[0];
+	    cdata->cfg.fuse.fuse_id_word2 = front_id_data[1];
+	    cdata->cfg.fuse.fuse_id_word3 = front_id_data[2];
+	    cdata->cfg.fuse.fuse_id_word4 = front_id_data[3];
+	    pr_info("s5k4e6_htc: fuse->fuse_id : 0x%x 0x%x 0x%x 0x%x\n",
+		    cdata->cfg.fuse.fuse_id_word1,
+		    cdata->cfg.fuse.fuse_id_word2,
+		    cdata->cfg.fuse.fuse_id_word3,
+		    cdata->cfg.fuse.fuse_id_word4);
+	    cdata->lens_id = front_otp_data[1];
+	    
+	    cdata->af_value.VCM_VENDOR = front_otp_data[0];
+	    cdata->af_value.MODULE_ID_AB = cdata->cfg.fuse.fuse_id_word1;
+	    cdata->af_value.VCM_VENDOR_ID_VERSION = front_otp_data[4];
+	    cdata->af_value.AF_INF_MSB = front_otp_data [5];
+	    cdata->af_value.AF_INF_LSB = front_otp_data [6];
+	    cdata->af_value.AF_MACRO_MSB = front_otp_data [7];
+	    cdata->af_value.AF_MACRO_LSB = front_otp_data [8];
+	    strlcpy(cdata->af_value.ACT_NAME, "lc898123", sizeof("lc898123"));
+	    pr_info("%s: s5k4e6_htcOTP Actuator Name = %s\n",__func__, cdata->af_value.ACT_NAME);
+
+	    pr_info("%s: s5k4e6_htc OTP Module vendor = 0x%x\n",	       __func__,  front_otp_data[0]);
+	    pr_info("%s: s5k4e6_htc OTP LENS = 0x%x\n",			__func__,  front_otp_data[1]);
+	    pr_info("%s: s5k4e6_htc OTP Sensor Version = 0x%x\n",	      __func__,  front_otp_data[2]);
+	    pr_info("%s: s5k4e6_htc OTP Driver IC Vendor & Version = 0x%x\n",  __func__,  front_otp_data[3]);
+	    pr_info("%s: s5k4e6_htc OTP Actuator vender ID & Version = 0x%x\n",__func__,  front_otp_data[4]);
+	    pr_info("%s: s5k4e6_htc OTP Infinity position code (MSByte) = 0x%x\n", __func__,  cdata->af_value.AF_INF_MSB);
+	    pr_info("%s: s5k4e6_htc OTP Infinity position code (LSByte) = 0x%x\n", __func__,  cdata->af_value.AF_INF_LSB);
+	    pr_info("%s: s5k4e6_htc OTP Macro position code (MSByte) = 0x%x\n",    __func__,  cdata->af_value.AF_MACRO_MSB);
+	    pr_info("%s: s5k4e6_htc OTP Macro position code (LSByte) = 0x%x\n",    __func__,  cdata->af_value.AF_MACRO_LSB);
+	}
+	else {
+	    pr_info("%s: s5k4e6_htc OTP Module vendor = 0x%x\n",	       __func__,  front_otp_data[0]);
+	    pr_info("%s: s5k4e6_htc OTP LENS = 0x%x\n",			__func__,  front_otp_data[1]);
+	    pr_info("%s: s5k4e6_htc OTP Sensor Version = 0x%x\n",	      __func__,  front_otp_data[2]);
+	    pr_info("%s: s5k4e6_htc OTP Driver IC Vendor & Version = 0x%x\n",  __func__,  front_otp_data[3]);
+	    pr_info("%s: s5k4e6_htc OTP Actuator vender ID & Version = 0x%x\n",__func__,  front_otp_data[4]);
+	}
+	return rc;
 
     }
 	
@@ -1105,171 +1105,171 @@ int msm_sensor_read_fuseid32(struct sensorb_cfg_data32 *cdata, struct msm_sensor
     {
 		static int front_first= true;
 		if(front_first == true)
-        {
-            front_first= false;
-            for (i = 53 ; i >= 51 ; i--)
-            {
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0xFCFC, 0x4000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+	{
+	    front_first= false;
+	    for (i = 53 ; i >= 51 ; i--)
+	    {
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0xFCFC, 0x4000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0100, 0x0100, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0100, 0x0100, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
-                msleep(10);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6028, 0x2000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		msleep(10);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6028, 0x2000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0x000B, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, i, MSM_CAMERA_I2C_BYTE_DATA);
-                if (rc < 0)
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0x000B, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0X0009, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, 0X01, MSM_CAMERA_I2C_BYTE_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0A00, 0X0100, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, i, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                msleep(5);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602C, 0X2000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0X0009, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, 0X01, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0A00, 0X0100, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                
-                for (j = 0 ; j <4; j++)
-                {
-                    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602E, id_addr[j], MSM_CAMERA_I2C_WORD_DATA);
-                    if (rc < 0)
-                        pr_err("%s: i2c_write failed\n", __func__);
-                    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, 0x6F12, &read_data, MSM_CAMERA_I2C_BYTE_DATA);
-                    if (rc < 0)
-                        pr_err("%s: i2c_read failed\n", __func__);
-
-                    front_id_data[j] = read_data & 0xff;
-
-                    if (read_data)
-                        SN_valid_page = i;
-
-                }
-                if (SN_valid_page!=-1)
-                    break;
-
-            }
-            
-            for (i = 50 ; i >= 48 ; i--)
-            {
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0xFCFC, 0x4000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0100, 0x0100, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                msleep(10);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6028, 0x2000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0x000B, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		msleep(5);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602C, 0X2000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, i, MSM_CAMERA_I2C_BYTE_DATA);
-                if (rc < 0)
+		
+		for (j = 0 ; j <4; j++)
+		{
+		    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602E, id_addr[j], MSM_CAMERA_I2C_WORD_DATA);
+		    if (rc < 0)
+			pr_err("%s: i2c_write failed\n", __func__);
+		    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, 0x6F12, &read_data, MSM_CAMERA_I2C_BYTE_DATA);
+		    if (rc < 0)
+			pr_err("%s: i2c_read failed\n", __func__);
+
+		    front_id_data[j] = read_data & 0xff;
+
+		    if (read_data)
+			SN_valid_page = i;
+
+		}
+		if (SN_valid_page!=-1)
+		    break;
+
+	    }
+	    
+	    for (i = 50 ; i >= 48 ; i--)
+	    {
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0xFCFC, 0x4000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0100, 0x0100, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		msleep(10);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6028, 0x2000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0x000B, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0X0009, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, 0X01, MSM_CAMERA_I2C_BYTE_DATA);
-                if (rc < 0)
-					pr_err("%s: i2c_write failed\n", __func__);
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0A00, 0X0100, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, i, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                msleep(5);
-                
-                rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602C, 0X2000, MSM_CAMERA_I2C_WORD_DATA);
-                if (rc < 0)
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602A, 0X0009, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x6F12, 0X01, MSM_CAMERA_I2C_BYTE_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x0A00, 0X0100, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
 					pr_err("%s: i2c_write failed\n", __func__);
 
-                
-                for (j = 0 ; j <10; j++)
-                {
-                    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602E, id_addr[j], MSM_CAMERA_I2C_WORD_DATA);
-                    if (rc < 0)
-                        pr_err("%s: i2c_write failed\n", __func__);
-                    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, 0x6F12, &read_data, MSM_CAMERA_I2C_BYTE_DATA);
-                    if (rc < 0)
-                        pr_err("%s: i2c_read failed\n", __func__);
+		msleep(5);
+		
+		rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602C, 0X2000, MSM_CAMERA_I2C_WORD_DATA);
+		if (rc < 0)
+					pr_err("%s: i2c_write failed\n", __func__);
 
-                    front_otp_data[j] = read_data & 0xff;
+		
+		for (j = 0 ; j <10; j++)
+		{
+		    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_write(s_ctrl->sensor_i2c_client, 0x602E, id_addr[j], MSM_CAMERA_I2C_WORD_DATA);
+		    if (rc < 0)
+			pr_err("%s: i2c_write failed\n", __func__);
+		    rc = s_ctrl->sensor_i2c_client->i2c_func_tbl->i2c_read(s_ctrl->sensor_i2c_client, 0x6F12, &read_data, MSM_CAMERA_I2C_BYTE_DATA);
+		    if (rc < 0)
+			pr_err("%s: i2c_read failed\n", __func__);
 
-                    if (read_data)
-                        valid_page = i;
+		    front_otp_data[j] = read_data & 0xff;
 
-                }
-                if (valid_page!=-1)
-                    break;
-            }
-        }
-        if (cdata != NULL) {
-            cdata->cfg.fuse.fuse_id_word1 = front_id_data[0];
-            cdata->cfg.fuse.fuse_id_word2 = front_id_data[1];
-            cdata->cfg.fuse.fuse_id_word3 = front_id_data[2];
-            cdata->cfg.fuse.fuse_id_word4 = front_id_data[3];
-            pr_info("s5k4e6_htc: fuse->fuse_id : 0x%x 0x%x 0x%x 0x%x\n",
-                    cdata->cfg.fuse.fuse_id_word1,
-                    cdata->cfg.fuse.fuse_id_word2,
-                    cdata->cfg.fuse.fuse_id_word3,
-                    cdata->cfg.fuse.fuse_id_word4);
-            cdata->lens_id = front_otp_data[1];
-            
-            cdata->af_value.VCM_VENDOR = front_otp_data[0];
-            cdata->af_value.MODULE_ID_AB = cdata->cfg.fuse.fuse_id_word1;
-            cdata->af_value.VCM_VENDOR_ID_VERSION = front_otp_data[4];
-            cdata->af_value.AF_INF_MSB = front_otp_data [5];
-            cdata->af_value.AF_INF_LSB = front_otp_data [6];
-            cdata->af_value.AF_MACRO_MSB = front_otp_data [7];
-            cdata->af_value.AF_MACRO_LSB = front_otp_data [8];
-            strlcpy(cdata->af_value.ACT_NAME, "lc898123", sizeof("lc898123"));
-            pr_info("%s: s5k4e6_htcOTP Actuator Name = %s\n",__func__, cdata->af_value.ACT_NAME);
+		    if (read_data)
+			valid_page = i;
 
-            pr_info("%s: s5k4e6_htc OTP Module vendor = 0x%x\n",               __func__,  front_otp_data[0]);
-            pr_info("%s: s5k4e6_htc OTP LENS = 0x%x\n",                        __func__,  front_otp_data[1]);
-            pr_info("%s: s5k4e6_htc OTP Sensor Version = 0x%x\n",              __func__,  front_otp_data[2]);
-            pr_info("%s: s5k4e6_htc OTP Driver IC Vendor & Version = 0x%x\n",  __func__,  front_otp_data[3]);
-            pr_info("%s: s5k4e6_htc OTP Actuator vender ID & Version = 0x%x\n",__func__,  front_otp_data[4]);
-            pr_info("%s: s5k4e6_htc OTP Infinity position code (MSByte) = 0x%x\n", __func__,  cdata->af_value.AF_INF_MSB);
-            pr_info("%s: s5k4e6_htc OTP Infinity position code (LSByte) = 0x%x\n", __func__,  cdata->af_value.AF_INF_LSB);
-            pr_info("%s: s5k4e6_htc OTP Macro position code (MSByte) = 0x%x\n",    __func__,  cdata->af_value.AF_MACRO_MSB);
-            pr_info("%s: s5k4e6_htc OTP Macro position code (LSByte) = 0x%x\n",    __func__,  cdata->af_value.AF_MACRO_LSB);
-        }
-        else {
-            pr_info("%s: s5k4e6_htc OTP Module vendor = 0x%x\n",               __func__,  front_otp_data[0]);
-            pr_info("%s: s5k4e6_htc OTP LENS = 0x%x\n",                        __func__,  front_otp_data[1]);
-            pr_info("%s: s5k4e6_htc OTP Sensor Version = 0x%x\n",              __func__,  front_otp_data[2]);
-            pr_info("%s: s5k4e6_htc OTP Driver IC Vendor & Version = 0x%x\n",  __func__,  front_otp_data[3]);
-            pr_info("%s: s5k4e6_htc OTP Actuator vender ID & Version = 0x%x\n",__func__,  front_otp_data[4]);
-        }
-        return rc;
+		}
+		if (valid_page!=-1)
+		    break;
+	    }
+	}
+	if (cdata != NULL) {
+	    cdata->cfg.fuse.fuse_id_word1 = front_id_data[0];
+	    cdata->cfg.fuse.fuse_id_word2 = front_id_data[1];
+	    cdata->cfg.fuse.fuse_id_word3 = front_id_data[2];
+	    cdata->cfg.fuse.fuse_id_word4 = front_id_data[3];
+	    pr_info("s5k4e6_htc: fuse->fuse_id : 0x%x 0x%x 0x%x 0x%x\n",
+		    cdata->cfg.fuse.fuse_id_word1,
+		    cdata->cfg.fuse.fuse_id_word2,
+		    cdata->cfg.fuse.fuse_id_word3,
+		    cdata->cfg.fuse.fuse_id_word4);
+	    cdata->lens_id = front_otp_data[1];
+	    
+	    cdata->af_value.VCM_VENDOR = front_otp_data[0];
+	    cdata->af_value.MODULE_ID_AB = cdata->cfg.fuse.fuse_id_word1;
+	    cdata->af_value.VCM_VENDOR_ID_VERSION = front_otp_data[4];
+	    cdata->af_value.AF_INF_MSB = front_otp_data [5];
+	    cdata->af_value.AF_INF_LSB = front_otp_data [6];
+	    cdata->af_value.AF_MACRO_MSB = front_otp_data [7];
+	    cdata->af_value.AF_MACRO_LSB = front_otp_data [8];
+	    strlcpy(cdata->af_value.ACT_NAME, "lc898123", sizeof("lc898123"));
+	    pr_info("%s: s5k4e6_htcOTP Actuator Name = %s\n",__func__, cdata->af_value.ACT_NAME);
+
+	    pr_info("%s: s5k4e6_htc OTP Module vendor = 0x%x\n",	       __func__,  front_otp_data[0]);
+	    pr_info("%s: s5k4e6_htc OTP LENS = 0x%x\n",			__func__,  front_otp_data[1]);
+	    pr_info("%s: s5k4e6_htc OTP Sensor Version = 0x%x\n",	      __func__,  front_otp_data[2]);
+	    pr_info("%s: s5k4e6_htc OTP Driver IC Vendor & Version = 0x%x\n",  __func__,  front_otp_data[3]);
+	    pr_info("%s: s5k4e6_htc OTP Actuator vender ID & Version = 0x%x\n",__func__,  front_otp_data[4]);
+	    pr_info("%s: s5k4e6_htc OTP Infinity position code (MSByte) = 0x%x\n", __func__,  cdata->af_value.AF_INF_MSB);
+	    pr_info("%s: s5k4e6_htc OTP Infinity position code (LSByte) = 0x%x\n", __func__,  cdata->af_value.AF_INF_LSB);
+	    pr_info("%s: s5k4e6_htc OTP Macro position code (MSByte) = 0x%x\n",    __func__,  cdata->af_value.AF_MACRO_MSB);
+	    pr_info("%s: s5k4e6_htc OTP Macro position code (LSByte) = 0x%x\n",    __func__,  cdata->af_value.AF_MACRO_LSB);
+	}
+	else {
+	    pr_info("%s: s5k4e6_htc OTP Module vendor = 0x%x\n",	       __func__,  front_otp_data[0]);
+	    pr_info("%s: s5k4e6_htc OTP LENS = 0x%x\n",			__func__,  front_otp_data[1]);
+	    pr_info("%s: s5k4e6_htc OTP Sensor Version = 0x%x\n",	      __func__,  front_otp_data[2]);
+	    pr_info("%s: s5k4e6_htc OTP Driver IC Vendor & Version = 0x%x\n",  __func__,  front_otp_data[3]);
+	    pr_info("%s: s5k4e6_htc OTP Actuator vender ID & Version = 0x%x\n",__func__,  front_otp_data[4]);
+	}
+	return rc;
 
     }
 	
@@ -2055,7 +2055,7 @@ static int msm_sensor_config32(struct msm_sensor_ctrl_t *s_ctrl,
 #endif
 #ifdef CONFIG_OIS_CALIBRATION
     case CFG_SET_GYRO_CALIBRATION:
-        rc = htc_ois_calibration(s_ctrl, cdata->cam_id);
+	rc = htc_ois_calibration(s_ctrl, cdata->cam_id);
     break;
 #endif
 	default:
@@ -2538,7 +2538,7 @@ int msm_sensor_config(struct msm_sensor_ctrl_t *s_ctrl, void __user *argp)
 #endif
 #ifdef CONFIG_OIS_CALIBRATION
     case CFG_SET_GYRO_CALIBRATION:
-        rc = htc_ois_calibration(s_ctrl, cdata->cam_id);
+	rc = htc_ois_calibration(s_ctrl, cdata->cam_id);
     break;
 #endif
 	default:

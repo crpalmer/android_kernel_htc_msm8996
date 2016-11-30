@@ -1327,6 +1327,10 @@ static int msm_isp_buf_mgr_debug(struct msm_isp_buf_mgr *buf_mgr,
 
 	for (i = 0; i < BUF_MGR_NUM_BUF_Q; i++) {
 		bufq = &buf_mgr->bufq[i];
+#if 0
+		if (!bufq)
+			continue;
+#endif
 
 		spin_lock_irqsave(&bufq->bufq_lock, flags);
 		if (!bufq->bufq_handle) {

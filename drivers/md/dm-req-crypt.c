@@ -912,10 +912,15 @@ static int req_crypt_map(struct dm_target *ti, struct request *clone,
 	struct req_dm_crypt_io *req_io = NULL;
 	int error = DM_REQ_CRYPT_ERROR, copy_bio_sector_to_req = 0;
 	struct bio *bio_src = NULL;
+	gfp_t gfp_flag = GFP_KERNEL;
 
-	req_io = mempool_alloc(req_io_pool, GFP_NOWAIT);
+	if (in_interrupt() || irqs_disabled())
+		gfp_flag = GFP_NOWAIT;
+
+	req_io = mempool_alloc(req_io_pool, gfp_flag);
 	if (!req_io) {
 		DMERR("%s req_io allocation failed\n", __func__);
+		BUG();
 		error = DM_REQ_CRYPT_ERROR;
 		goto submit_request;
 	}

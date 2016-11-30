@@ -216,6 +216,14 @@
 #define PCIE20_DEVICE_CONTROL_STATUS	0x78
 #define PCIE20_DEVICE_CONTROL2_STATUS2 0x98
 
+#ifdef CONFIG_BCM4359
+#define PCIE20_L1SUB_CONTROL2    0x15C
+#define PCIE20_L1SUB_CONTROL2_BRCM      0x24C
+#define PCIE20_CAP_LINKCTRLSTATUS_BRCM      0xBC
+#define PCIE20_DEVICE_CONTROL2_STATUS2_BRCM 0xD4
+#define PCIE20_LTR_MAX_SNOOP_LATENCY_BRCM   0x1B4
+#endif 
+
 #define PCIE20_AUX_CLK_FREQ_REG		0xB40
 #define PCIE20_ACK_F_ASPM_CTRL_REG     0x70C
 #define PCIE20_ACK_N_FTS		   0xff00
@@ -1434,6 +1442,13 @@ static void pcie_phy_init(struct msm_pcie_dev_t *dev)
 		msm_pcie_write_reg(dev->phy, PCIE_COM_SW_RESET, 0x00);
 		msm_pcie_write_reg(dev->phy, PCIE_COM_START_CONTROL, 0x03);
 	}
+
+	
+	
+	writel_relaxed(0x151D20, dev->parf + PCIE20_PARF_PCS_DEEMPH);
+	writel_relaxed(0x7C79, dev->parf + PCIE20_PARF_PCS_SWING);
+	
+
 }
 
 static void pcie_pcs_port_phy_init(struct msm_pcie_dev_t *dev)
@@ -3393,6 +3408,12 @@ static void msm_pcie_config_link_state(struct msm_pcie_dev_t *dev)
 	u32 ep_link_ctrlstts_offset = 0;
 	u32 ep_dev_ctrl2stts2_offset = 0;
 
+#ifdef CONFIG_BCM4359
+	u32 ep_l1sub_ctrl2_offset = 0x24c;
+	u32 tpoweron = 0;
+	u32 ltrlatency = 0;
+#endif
+
 	/* Enable the AUX Clock and the Core Clk to be synchronous for L1SS*/
 	if (!dev->aux_clk_sync && dev->l1ss_supported)
 		msm_pcie_write_mask(dev->parf +
@@ -3516,6 +3537,9 @@ static void msm_pcie_config_link_state(struct msm_pcie_dev_t *dev)
 			if ((val & 0xffff) == L1SUB_CAP_ID) {
 				ep_l1sub_cap_reg1_offset = current_offset + 0x4;
 				ep_l1sub_ctrl1_offset = current_offset + 0x8;
+#ifdef CONFIG_BCM4359
+				ep_l1sub_ctrl2_offset = current_offset + 0xc;
+#endif
 				break;
 			}
 			current_offset = val >> 20;
@@ -3532,8 +3556,119 @@ static void msm_pcie_config_link_state(struct msm_pcie_dev_t *dev)
 		PCIE_DBG2(dev, "EP's L1SUB_CAPABILITY_REG_1: 0x%x\n", val);
 		PCIE_DBG2(dev, "RC%d: ep_l1sub_ctrl1_offset: 0x%x\n",
 				dev->rc_idx, ep_l1sub_ctrl1_offset);
+#ifdef CONFIG_BCM4359
+		PCIE_DBG2(dev, "RC%d: ep_l1sub_ctrl2_offset: 0x%x\n",
+				dev->rc_idx, ep_l1sub_ctrl2_offset);
+#endif
 
 		val &= 0xf;
+
+#ifdef CONFIG_BCM4359
+		if (dev->rc_idx == 0) {
+			
+			tpoweron = BIT(6)|BIT(5)|BIT(0);
+			PCIE_DBG2(dev, "BCM4359: TPOWERON 120us, 0x%x\n", tpoweron);
+
+			
+			val |= BIT(30)|BIT(23)|BIT(21)|BIT(3)|BIT(2)|BIT(1)|BIT(0);
+			PCIE_DBG2(dev, "BCM4359: L12THRESHOLD 0us, 0x%x\n", val);
+
+			
+			ltrlatency = BIT(28)|BIT(17)|BIT(16)|BIT(12)|BIT(1)|BIT(0);
+			PCIE_DBG2(dev, "BCM4359: LTR_LATENCY 3ms, 0x%x\n", ltrlatency);
+
+			
+			
+			msm_pcie_write_mask(dev->conf + PCIE20_CAP_LINKCTRLSTATUS_BRCM,
+				BIT(1)|BIT(0), 0);
+			
+			msm_pcie_write_mask(dev->conf + ep_l1sub_ctrl1_offset,
+				BIT(3)|BIT(2)|BIT(1)|BIT(0), 0);
+			
+			msm_pcie_write_mask(dev->dm_core + PCIE20_CAP_LINKCTRLSTATUS,
+				BIT(1)|BIT(0), 0);
+			
+			msm_pcie_write_mask(dev->dm_core + PCIE20_L1SUB_CONTROL1,
+				BIT(3)|BIT(2)|BIT(1)|BIT(0), 0);
+
+			
+			msm_pcie_write_mask(dev->dm_core +
+					PCIE20_L1SUB_CONTROL2,
+					0xff, tpoweron);
+
+			
+			msm_pcie_write_mask(dev->conf + ep_l1sub_ctrl2_offset,
+					0xff, tpoweron);
+
+			
+			msm_pcie_write_mask(dev->dm_core + PCIE20_L1SUB_CONTROL1,
+						0, val);
+
+			
+			msm_pcie_write_mask(dev->conf + ep_l1sub_ctrl1_offset,
+						0, val);
+
+			
+			
+			msm_pcie_write_mask(dev->conf + PCIE20_CAP_LINKCTRLSTATUS_BRCM, 0,
+				BIT(8)|BIT(6)|BIT(1));
+			
+			msm_pcie_write_mask(dev->dm_core + PCIE20_CAP_LINKCTRLSTATUS, 0,
+				BIT(6)|BIT(1));
+
+			
+			msm_pcie_write_mask(dev->conf + PCIE20_LTR_MAX_SNOOP_LATENCY_BRCM, 0, ltrlatency);
+
+			
+			msm_pcie_write_mask(dev->dm_core + PCIE20_DEVICE_CONTROL2_STATUS2, 0, BIT(10));
+
+			
+			msm_pcie_write_mask(dev->conf + ep_dev_ctrl2stts2_offset, 0, BIT(10));
+
+			if (dev->shadow_en) {
+				dev->rc_shadow[PCIE20_L1SUB_CONTROL1 / 4] =
+						readl_relaxed(dev->dm_core +
+						PCIE20_L1SUB_CONTROL1);
+				dev->rc_shadow[PCIE20_L1SUB_CONTROL2 / 4] =
+						readl_relaxed(dev->dm_core +
+						PCIE20_L1SUB_CONTROL2);
+				dev->rc_shadow[PCIE20_DEVICE_CONTROL2_STATUS2 / 4] =
+						readl_relaxed(dev->dm_core +
+						PCIE20_DEVICE_CONTROL2_STATUS2);
+				dev->ep_shadow[0][ep_l1sub_ctrl1_offset / 4] =
+						readl_relaxed(dev->conf +
+						ep_l1sub_ctrl1_offset);
+				dev->ep_shadow[0][ep_l1sub_ctrl2_offset / 4] =
+						readl_relaxed(dev->conf +
+						ep_l1sub_ctrl2_offset);
+				dev->ep_shadow[0][PCIE20_LTR_MAX_SNOOP_LATENCY_BRCM / 4] =
+						readl_relaxed(dev->conf +
+						PCIE20_LTR_MAX_SNOOP_LATENCY_BRCM);
+				dev->ep_shadow[0][ep_dev_ctrl2stts2_offset / 4] =
+						readl_relaxed(dev->conf +
+						ep_dev_ctrl2stts2_offset);
+			}
+
+			PCIE_DBG2(dev, "RC's L1SUB_CONTROL1 (L12THRESHOLD):0x%x\n",
+				readl_relaxed(dev->dm_core + PCIE20_L1SUB_CONTROL1));
+			PCIE_DBG2(dev, "RC's L1SUB_CONTROL2 (TPOWERON):0x%x\n",
+				readl_relaxed(dev->dm_core + PCIE20_L1SUB_CONTROL2));
+			PCIE_DBG2(dev, "RC's DEVICE_CONTROL2_STATUS2:0x%x\n",
+				readl_relaxed(dev->dm_core +
+				PCIE20_DEVICE_CONTROL2_STATUS2));
+
+			PCIE_DBG2(dev, "EP's L1SUB_CONTROL1 (L12THRESHOLD):0x%x\n",
+				readl_relaxed(dev->conf + ep_l1sub_ctrl1_offset));
+			PCIE_DBG2(dev, "EP's L1SUB_CONTROL2 (TPOWERON):0x%x\n",
+				readl_relaxed(dev->conf + ep_l1sub_ctrl2_offset));
+			PCIE_DBG2(dev, "EP's PCIE20_LTR_MAX_SNOOP_LATENCY_BRCM:0x%x\n",
+				readl_relaxed(dev->conf + PCIE20_LTR_MAX_SNOOP_LATENCY_BRCM));
+			PCIE_DBG2(dev, "EP's DEVICE_CONTROL2_STATUS2:0x%x\n",
+				readl_relaxed(dev->conf +
+				ep_dev_ctrl2stts2_offset));
+
+		} else {
+#endif
 
 		msm_pcie_write_reg_field(dev->dm_core, PCIE20_L1SUB_CONTROL1,
 					0xf, val);
@@ -3568,6 +3703,10 @@ static void msm_pcie_config_link_state(struct msm_pcie_dev_t *dev)
 		PCIE_DBG2(dev, "EP's DEVICE_CONTROL2_STATUS2:0x%x\n",
 			readl_relaxed(dev->conf +
 			ep_dev_ctrl2stts2_offset));
+
+#ifdef CONFIG_BCM4359
+		}
+#endif
 	}
 }
 

@@ -204,7 +204,7 @@ static void cam_smmu_page_fault_work(struct work_struct *work)
 	list_del(&payload->list);
 	mutex_unlock(&iommu_cb_set.payload_list_lock);
 
-	
+	/* Dereference the payload to call the handler */
 	idx = payload->idx;
 	mutex_lock(&iommu_cb_set.cb_info[idx].lock);
 	cam_smmu_check_vaddr_in_range(idx, (void *)payload->iova);

@@ -40,8 +40,6 @@ static enum hrtimer_restart gpio_timer_func(struct hrtimer *timer)
 		container_of(timer, struct timed_gpio_data, timer);
 
 	gpio_direction_output(data->gpio, data->active_low ? 1 : 0);
-	VIB_INFO_LOG("off, active_low(%d)\n", data->active_low);
-
 	return HRTIMER_NORESTART;
 }
 
@@ -66,29 +64,20 @@ static void gpio_enable(struct timed_output_dev *dev, int value)
 		container_of(dev, struct timed_gpio_data, dev);
 	unsigned long	flags;
 
-	if(value < 0) {
-		VIB_INFO_LOG("%s unsupport value: %d\n", __func__, value);
-		return;
-	}
-	VIB_INFO_LOG("%s= %d\n", __func__, value);
-
 	spin_lock_irqsave(&data->lock, flags);
 
-	
+	/* cancel previous timer and set GPIO according to value */
 	hrtimer_cancel(&data->timer);
-
 	gpio_direction_output(data->gpio, data->active_low ? !value : !!value);
 
-	if(value > 0) {
-		VIB_INFO_LOG("on, active_low(%d)\n", data->active_low);
+	if (value > 0) {
 		if (value > data->max_timeout)
 			value = data->max_timeout;
 
 		hrtimer_start(&data->timer,
 			ktime_set(value / 1000, (value % 1000) * 1000000),
 			HRTIMER_MODE_REL);
-	} else	
-		VIB_INFO_LOG("off, active_low(%d)\n", data->active_low);
+	}
 
 	spin_unlock_irqrestore(&data->lock, flags);
 }
@@ -156,7 +145,6 @@ static int timed_gpio_probe(struct platform_device *pdev)
 	struct timed_gpio_data *gpio_data, *gpio_dat;
 	int i, ret;
 
-	VIB_INFO_LOG	("%s,++++++++++++++++++\n", __func__);
 	if (!pdata) {
 		pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
 		ret = timed_gpio_dt_parse(pdev->dev.of_node, pdata);
@@ -192,11 +180,9 @@ static int timed_gpio_probe(struct platform_device *pdev)
 		gpio_dat->dev.get_time = gpio_get_time;
 		gpio_dat->dev.enable = gpio_enable;
 		ret = gpio_request(cur_gpio->gpio, cur_gpio->name);
-
 		if (ret < 0)
 			goto err_out;
 		ret = timed_output_dev_register(&gpio_dat->dev);
-
 		if (ret < 0) {
 			gpio_free(cur_gpio->gpio);
 			goto err_out;
@@ -207,9 +193,9 @@ static int timed_gpio_probe(struct platform_device *pdev)
 		gpio_dat->active_low = cur_gpio->active_low;
 		gpio_direction_output(gpio_dat->gpio, gpio_dat->active_low);
 	}
+
 	platform_set_drvdata(pdev, gpio_data);
 
-	VIB_INFO_LOG	("%s,----------------------\n", __func__);
 	return 0;
 
 err_out:

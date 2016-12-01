@@ -642,6 +642,14 @@ void slim_report_absent(struct slim_device *sbdev)
 EXPORT_SYMBOL(slim_report_absent);
 
 static int slim_remove_ch(struct slim_controller *ctrl, struct slim_ich *slc);
+/*
+ * slim_framer_booted: This function is called by controller after the active
+ * framer has booted (using Bus Reset sequence, or after it has shutdown and has
+ * come back up). Components, devices on the bus may be in undefined state,
+ * and this function triggers their drivers to do the needful
+ * to bring them back in Reset state so that they can acquire sync, report
+ * present and be operational again.
+ */
 void slim_framer_booted(struct slim_controller *ctrl)
 {
 	struct slim_device *sbdev;
@@ -651,7 +659,7 @@ void slim_framer_booted(struct slim_controller *ctrl)
 	if (!ctrl)
 		return;
 
-	
+	/* Since framer has rebooted, reset all data channels */
 	mutex_lock(&ctrl->sched.m_reconf);
 	for (i = 0; i < ctrl->nchans; i++) {
 		struct slim_ich *slc = &ctrl->chans[i];
@@ -1133,7 +1141,7 @@ int slim_bulk_msg_write(struct slim_device *sb, u8 mt, u8 mc,
 			struct slim_val_inf msgs[], int n,
 			int (*comp_cb)(void *ctx, int err), void *ctx)
 {
-	int i, ret = 0; 
+	int i, ret;
 
 	if (!sb || !sb->ctrl || !msgs)
 		return -EINVAL;

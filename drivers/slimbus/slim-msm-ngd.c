@@ -1,4 +1,4 @@
-/* Copyright (c) 2011-2015, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2016, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -328,7 +328,7 @@ static int ngd_xfer_msg(struct slim_controller *ctrl, struct slim_msg_txn *txn)
 	u8 la = txn->la;
 	u8 txn_mt;
 	u16 txn_mc = txn->mc;
-	u8 wbuf[SLIM_MSGQ_BUF_LEN] = {0}; 
+	u8 wbuf[SLIM_MSGQ_BUF_LEN];
 	bool report_sat = false;
 	bool sync_wr = true;
 
@@ -819,6 +819,11 @@ static int ngd_bulk_wr(struct slim_controller *ctrl, u8 la, u8 mt, u8 mc,
 		}
 	}
 	header = dev->bulk.base;
+	/* SLIM_INFO only prints to internal buffer log, does not do pr_info */
+	for (i = 0; i < (dev->bulk.size); i += 16, header += 4)
+		SLIM_INFO(dev, "bulk sz:%d:0x%x, 0x%x, 0x%x, 0x%x",
+			  dev->bulk.size, *header, *(header+1), *(header+2),
+			  *(header+3));
 	if (comp_cb) {
 		dev->bulk.cb = comp_cb;
 		dev->bulk.ctx = ctx;
@@ -869,6 +874,11 @@ static int ngd_xferandwait_ack(struct slim_controller *ctrl,
 	int ret;
 
 	if (dev->state == MSM_CTRL_DOWN) {
+		/*
+		 * no need to send anything to the bus due to SSR
+		 * transactions related to channel removal marked as success
+		 * since HW is down
+		 */
 		if ((txn->mt == SLIM_MSG_MT_DEST_REFERRED_USER) &&
 			((txn->mc >= SLIM_USR_MC_CHAN_CTRL &&
 			  txn->mc <= SLIM_USR_MC_REQ_BW) ||
@@ -1229,7 +1239,7 @@ static int ngd_slim_power_up(struct msm_slim_ctrl *dev, bool mdm_restart)
 
 hw_init_retry:
 
-	
+	/* No need to vote if contorller is not in low power mode */
 	if (!mdm_restart &&
 		(cur_state == MSM_CTRL_DOWN || cur_state == MSM_CTRL_ASLEEP)) {
 		ret = msm_slim_qmi_power_request(dev, true);
@@ -1283,6 +1293,10 @@ hw_init_retry:
 	}
 
 capability_retry:
+	/*
+	 * ADSP power collapse case (OR SSR), where HW was reset
+	 * BAM programming will happen when capability message is received
+	 */
 	writel_relaxed(ngd_int, dev->base + NGD_INT_EN +
 				NGD_BASE(dev->ctrl.nr, dev->ver));
 
@@ -1836,7 +1850,6 @@ static int ngd_slim_runtime_resume(struct device *device)
 	}
 	mutex_unlock(&dev->tx_lock);
 	SLIM_INFO(dev, "Slim runtime resume: ret %d\n", ret);
-
 	return ret;
 }
 

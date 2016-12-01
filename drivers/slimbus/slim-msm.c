@@ -560,6 +560,10 @@ void msm_slim_tx_msg_return(struct msm_slim_ctrl *dev, int err)
 			/* print the descriptor that resulted in error */
 			for (i = 0; i < (SLIM_MSGQ_BUF_LEN >> 2); i++)
 				SLIM_WARN(dev, "err desc[%d]:0x%x", i, addr[i]);
+			/* print BAM debug info for TX pipe for invalid TX */
+			if (err == -EINVAL)
+				sps_get_bam_debug_info(dev->bam.hdl, 93,
+							SPS_BAM_PIPE(4), 0, 2);
 		}
 		/* reclaim all packets that were delivered out of order */
 		if (idx != dev->tx_head)
@@ -1533,7 +1537,7 @@ int msm_slim_qmi_init(struct msm_slim_ctrl *dev, bool apps_is_master)
 		goto qmi_connect_to_service_failed;
 	}
 
-	
+	/* Instance is 0 based */
 	req.instance = (dev->ctrl.nr >> 1);
 	req.mode_valid = 1;
 

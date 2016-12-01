@@ -2662,13 +2662,13 @@ static int mdss_mdp_parse_dt_pipe(struct platform_device *pdev)
 	goto parse_done;
 
 parse_fail:
-	devm_kfree(&mdata->pdev->dev, mdata->cursor_pipes);
+	kfree(mdata->cursor_pipes);
 cursor_alloc_fail:
-	devm_kfree(&mdata->pdev->dev, mdata->dma_pipes);
+	kfree(mdata->dma_pipes);
 dma_alloc_fail:
-	devm_kfree(&mdata->pdev->dev, mdata->rgb_pipes);
+	kfree(mdata->rgb_pipes);
 rgb_alloc_fail:
-	devm_kfree(&mdata->pdev->dev, mdata->vig_pipes);
+	kfree(mdata->vig_pipes);
 parse_done:
 vig_alloc_fail:
 	kfree(xin_id);

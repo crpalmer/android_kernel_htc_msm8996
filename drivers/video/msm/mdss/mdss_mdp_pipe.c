@@ -1419,8 +1419,7 @@ static bool mdss_mdp_check_pipe_in_use(struct mdss_mdp_pipe *pipe)
 				mixercfg, stage_off_mask,
 				mixercfg_extn, stage_off_extn_mask);
 			MDSS_XLOG_TOUT_HANDLER("mdp", "vbif", "vbif_nrt",
-				"dbg_bus", "vbif_dbg_bus");
-			in_use = true;
+				"dbg_bus", "vbif_dbg_bus", "panic");
 		}
 
 		mixer = ctl->mixer_right;
@@ -1433,8 +1432,7 @@ static bool mdss_mdp_check_pipe_in_use(struct mdss_mdp_pipe *pipe)
 				mixercfg, stage_off_mask,
 				mixercfg_extn, stage_off_extn_mask);
 			MDSS_XLOG_TOUT_HANDLER("mdp", "vbif", "vbif_nrt",
-				"dbg_bus", "vbif_dbg_bus");
-			in_use = true;
+				"dbg_bus", "vbif_dbg_bus", "panic");
 		}
 	}
 

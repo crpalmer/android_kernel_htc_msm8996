@@ -79,8 +79,6 @@ struct hdmi_hdcp2p2_ctrl {
 	struct kthread_work recv_msg;
 	struct kthread_work link;
 	struct kthread_work poll;
-
-	u8 hdcp2version;
 };
 
 static int hdmi_hdcp2p2_auth(struct hdmi_hdcp2p2_ctrl *ctrl);
@@ -1084,9 +1082,6 @@ static bool hdmi_hdcp2p2_supported(struct hdmi_hdcp2p2_ctrl *ctrl)
 	int rc = hdmi_hdcp2p2_read_version(ctrl, &hdcp2version);
 	if (rc)
 		goto error;
-
-	if (ctrl)
-		ctrl->hdcp2version = hdcp2version;
 
 	if (hdcp2version & BIT(2)) {
 		pr_debug("Sink is HDCP 2.2 capable\n");

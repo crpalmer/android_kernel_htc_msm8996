@@ -22,7 +22,6 @@
 #include <linux/of_address.h>
 #include <linux/fb.h>
 #include <linux/dma-buf.h>
-#include <linux/dma-contiguous.h>
 
 #include "mdss_fb.h"
 #include "mdss_mdp.h"
@@ -242,7 +241,6 @@ int mdss_mdp_splash_cleanup(struct msm_fb_data_type *mfd,
 {
 	struct mdss_overlay_private *mdp5_data;
 	struct mdss_mdp_ctl *ctl;
-	struct platform_device *pdev = NULL;
 	int rc = 0;
 
 	if (!mfd)
@@ -256,25 +254,15 @@ int mdss_mdp_splash_cleanup(struct msm_fb_data_type *mfd,
 	if (!ctl)
 		return -EINVAL;
 
-	pdev = mfd->pdev;
 	if (!mfd->panel_info->cont_splash_enabled ||
 		(mfd->splash_info.iommu_dynamic_attached && !use_borderfill)) {
 		if (mfd->splash_info.iommu_dynamic_attached &&
 			use_borderfill) {
-			pr_info("Release splash_logo image buffer [%x, %x, %p]\n",
-				mdp5_data->splash_mem_addr, mdp5_data->splash_mem_size, mdp5_data->splash_mem_vaddr);
 			mdss_mdp_splash_unmap_splash_mem(mfd);
-			if (!mdp5_data->splash_mem_vaddr) {
-				memblock_free(mdp5_data->splash_mem_addr,
-						mdp5_data->splash_mem_size);
-				mdss_free_bootmem(mdp5_data->splash_mem_addr,
-						mdp5_data->splash_mem_size);
-			} else {
-				DEFINE_DMA_ATTRS(attrs);
-				dma_set_attr(DMA_ATTR_SKIP_ZEROING, &attrs);
-				dma_free_attrs(&pdev->dev, mdp5_data->splash_mem_size, mdp5_data->splash_mem_vaddr, mdp5_data->splash_mem_dma, &attrs);
-				mdp5_data->splash_mem_vaddr = NULL;
-			}
+			memblock_free(mdp5_data->splash_mem_addr,
+					mdp5_data->splash_mem_size);
+			mdss_free_bootmem(mdp5_data->splash_mem_addr,
+					mdp5_data->splash_mem_size);
 		}
 		goto end;
 	}
@@ -321,20 +309,11 @@ int mdss_mdp_splash_cleanup(struct msm_fb_data_type *mfd,
 
 	if (mdp5_data->splash_mem_addr &&
 		!mfd->splash_info.iommu_dynamic_attached) {
-		
-		pr_info("Release cont_splash buffer [%x, %x, %p]\n",
-			mdp5_data->splash_mem_addr, mdp5_data->splash_mem_size, mdp5_data->splash_mem_vaddr);
-		if (!mdp5_data->splash_mem_vaddr) {
-			memblock_free(mdp5_data->splash_mem_addr,
-						mdp5_data->splash_mem_size);
-			mdss_free_bootmem(mdp5_data->splash_mem_addr,
-						mdp5_data->splash_mem_size);
-		} else {
-			DEFINE_DMA_ATTRS(attrs);
-			dma_set_attr(DMA_ATTR_SKIP_ZEROING, &attrs);
-			dma_free_attrs(&pdev->dev, mdp5_data->splash_mem_size, mdp5_data->splash_mem_vaddr, mdp5_data->splash_mem_dma, &attrs);
-			mdp5_data->splash_mem_vaddr = NULL;
-		}
+		/* Give back the reserved memory to the system */
+		memblock_free(mdp5_data->splash_mem_addr,
+					mdp5_data->splash_mem_size);
+		mdss_free_bootmem(mdp5_data->splash_mem_addr,
+					mdp5_data->splash_mem_size);
 	}
 
 	mdss_mdp_footswitch_ctrl_splash(0);
@@ -651,7 +630,6 @@ static __ref int mdss_mdp_splash_parse_dt(struct msm_fb_data_type *mfd)
 	int len = 0, rc = 0;
 	u32 offsets[2];
 	struct device_node *pnode, *child_node;
-	bool use_cma = false;
 
 	mfd->splash_info.splash_logo_enabled =
 				of_property_read_bool(pdev->dev.of_node,
@@ -690,7 +668,6 @@ static __ref int mdss_mdp_splash_parse_dt(struct msm_fb_data_type *mfd)
 			}
 			offsets[0] = (u32) of_read_ulong(addr, 2);
 			offsets[1] = (u32) size;
-			use_cma = of_property_read_bool(pnode, "reusable");
 			of_node_put(pnode);
 		} else {
 			pr_err("mem reservation for splash screen fb not present\n");
@@ -707,26 +684,17 @@ static __ref int mdss_mdp_splash_parse_dt(struct msm_fb_data_type *mfd)
 
 	mdp5_mdata->splash_mem_addr = offsets[0];
 	mdp5_mdata->splash_mem_size = offsets[1];
-	pr_info("memaddr=%x size=%x, use_cma=%d\n", mdp5_mdata->splash_mem_addr,
-		mdp5_mdata->splash_mem_size, use_cma);
-	if (use_cma) {
-		DEFINE_DMA_ATTRS(attrs);
-		dma_set_attr(DMA_ATTR_SKIP_ZEROING, &attrs);
-
-		mdp5_mdata->splash_mem_vaddr = dma_alloc_attrs(&pdev->dev, mdp5_mdata->splash_mem_size, &mdp5_mdata->splash_mem_dma, GFP_KERNEL, &attrs);
-		pr_info("cma: vaddr=%p, dma=%pad\n", mdp5_mdata->splash_mem_vaddr, &mdp5_mdata->splash_mem_dma);
-	}
+	pr_debug("memaddr=%x size=%x\n", mdp5_mdata->splash_mem_addr,
+		mdp5_mdata->splash_mem_size);
 
 error:
 	if (!rc && !mfd->panel_info->cont_splash_enabled &&
 		mdp5_mdata->splash_mem_addr) {
 		pr_debug("mem reservation not reqd if cont splash disabled\n");
-		if (!use_cma) {
-			memblock_free(mdp5_mdata->splash_mem_addr,
-						mdp5_mdata->splash_mem_size);
-			mdss_free_bootmem(mdp5_mdata->splash_mem_addr,
-						mdp5_mdata->splash_mem_size);
-		}
+		memblock_free(mdp5_mdata->splash_mem_addr,
+					mdp5_mdata->splash_mem_size);
+		mdss_free_bootmem(mdp5_mdata->splash_mem_addr,
+					mdp5_mdata->splash_mem_size);
 	} else if (rc && mfd->panel_info->cont_splash_enabled) {
 		pr_err("no rsvd mem found in DT for splash screen\n");
 	} else {

@@ -260,7 +260,7 @@ static int hdmi_hdcp_authentication_part1(struct hdmi_hdcp_ctrl *hdcp_ctrl)
 	struct dss_io_data *hdcp_io;
 	u8 aksv[5], *bksv = NULL;
 	u8 an[8];
-	u8 bcaps;
+	u8 bcaps = 0;
 	struct hdmi_tx_ddc_data ddc_data;
 	u32 link0_status, an_ready, keys_state;
 	u8 buf[0xFF];
@@ -747,6 +747,7 @@ static int hdmi_hdcp_transfer_v_h(struct hdmi_hdcp_ctrl *hdcp_ctrl)
 
 	phy_addr = hdcp_ctrl->init_data.phy_addr;
 
+	memset(buf, 0, sizeof(buf));
 	io = hdcp_ctrl->init_data.core_io;
 	memset(&ddc_data, 0, sizeof(ddc_data));
 	ddc_data.dev_addr = 0x74;

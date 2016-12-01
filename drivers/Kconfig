@@ -70,7 +70,7 @@ source "drivers/gpio/Kconfig"
 
 source "drivers/w1/Kconfig"
 
-source "drivers/power/Kconfig"
+source "drivers/power_htc/Kconfig"
 
 source "drivers/hwmon/Kconfig"
 

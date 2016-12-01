@@ -1,4 +1,4 @@
-/* Copyright (c) 2014-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -465,7 +465,6 @@ static int lmh_get_sensor_devicetree(struct platform_device *pdev)
 	char *key = NULL;
 	struct device_node *node = pdev->dev.of_node;
 	struct resource *lmh_intr_base = NULL;
-	
 
 	lmh_data->trim_err_disable = false;
 	key = "qcom,lmh-trim-err-offset";
@@ -526,8 +525,7 @@ static int lmh_get_sensor_devicetree(struct platform_device *pdev)
 	}
 
 	if (!lmh_data->trim_err_disable) {
-		lmh_intr_base = platform_get_resource_byname(pdev,
-					IORESOURCE_MEM, "lmh_interrupt_status");
+		lmh_intr_base = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 		if (!lmh_intr_base) {
 			ret = -EINVAL;
 			pr_err("Error getting reg MEM for LMH.\n");
@@ -706,8 +704,7 @@ static int lmh_get_sensor_list(void)
 	} while (next < size);
 
 get_exit:
-	dma_free_attrs(&dev, PAGE_ALIGN(sizeof(struct lmh_sensor_packet)),
-		payload, payload_phys, &attrs);
+	dma_free_attrs(&dev, size, payload, payload_phys, &attrs);
 	return ret;
 }
 

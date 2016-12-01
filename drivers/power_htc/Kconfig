@@ -594,9 +594,9 @@ config MSM_BCL_PERIPHERAL_CTL
 	  provides routines to configure and monitor the BCL
 	  PMIC peripheral.
 
-source "drivers/power/reset/Kconfig"
+source "drivers/power_htc/reset/Kconfig"
 
 endif # POWER_SUPPLY
 
-source "drivers/power/avs/Kconfig"
-source "drivers/power/qcom/Kconfig"
+source "drivers/power_htc/avs/Kconfig"
+source "drivers/power_htc/qcom/Kconfig"

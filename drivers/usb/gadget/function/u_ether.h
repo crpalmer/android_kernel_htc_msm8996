@@ -261,8 +261,7 @@ int gether_get_ifname(struct net_device *net, char *name, int len);
 
 void gether_cleanup(struct eth_dev *dev);
 
-int gether_change_mtu(int new_mtu);
-
+/* connect/disconnect is handled by individual functions */
 struct net_device *gether_connect(struct gether *);
 void gether_disconnect(struct gether *);
 int gether_up(struct gether *);

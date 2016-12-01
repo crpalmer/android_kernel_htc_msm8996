@@ -284,6 +284,38 @@ static int ngd_get_tid(struct slim_controller *ctrl, struct slim_msg_txn *txn,
 	spin_unlock_irqrestore(&ctrl->txn_lock, flags);
 	return 0;
 }
+
+static int ngd_check_hw_status(struct msm_slim_ctrl *dev)
+{
+	void __iomem *ngd = dev->base + NGD_BASE(dev->ctrl.nr, dev->ver);
+	u32 laddr = readl_relaxed(ngd + NGD_STATUS);
+	int ret;
+
+	
+	if (!(laddr & NGD_LADDR)) {
+		dev->state = MSM_CTRL_ASLEEP;
+		mutex_unlock(&dev->tx_lock);
+		ret = ngd_slim_runtime_resume(dev->dev);
+
+		if (ret) {
+			SLIM_ERR(dev, "slim resume ret:%d, state:%d",
+					ret, dev->state);
+			msm_slim_put_ctrl(dev);
+			return -EREMOTEIO;
+		}
+		mutex_lock(&dev->tx_lock);
+	}
+	return 0;
+}
+static void slim_reinit_tx_msgq(struct msm_slim_ctrl *dev)
+{
+	if (dev->state != MSM_CTRL_DOWN) {
+		msm_slim_disconnect_endp(dev, &dev->tx_msgq,
+					&dev->use_tx_msgqs);
+		msm_slim_connect_endp(dev, &dev->tx_msgq);
+	}
+}
+
 static int ngd_xfer_msg(struct slim_controller *ctrl, struct slim_msg_txn *txn)
 {
 	DECLARE_COMPLETION_ONSTACK(done);
@@ -403,6 +435,9 @@ static int ngd_xfer_msg(struct slim_controller *ctrl, struct slim_msg_txn *txn)
 			msm_slim_put_ctrl(dev);
 			return -EREMOTEIO;
 		}
+		ret = ngd_check_hw_status(dev);
+		if (ret)
+			return ret;
 	}
 
 	if (txn->mt == SLIM_MSG_MT_CORE &&
@@ -570,19 +605,7 @@ static int ngd_xfer_msg(struct slim_controller *ctrl, struct slim_msg_txn *txn)
 							i, *(pbuf + i));
 			if (idx < MSM_TX_BUFS)
 				dev->wr_comp[idx] = NULL;
-			/*
-			 * disconnect/recoonect pipe so that subsequent
-			 * transactions don't timeout due to unavailable
-			 * descriptors
-			 */
-			if (dev->state != MSM_CTRL_DOWN) {
-				/* print BAM debug info for TX pipe */
-				sps_get_bam_debug_info(dev->bam.hdl, 93,
-							SPS_BAM_PIPE(4), 0, 2);
-				msm_slim_disconnect_endp(dev, &dev->tx_msgq,
-							&dev->use_tx_msgqs);
-				msm_slim_connect_endp(dev, &dev->tx_msgq);
-			}
+		                slim_reinit_tx_msgq(dev);
 		} else if (!timeout) {
 			ret = -ETIMEDOUT;
 			SLIM_WARN(dev, "timeout non-BAM TX,len:%d", txn->rl);
@@ -735,6 +758,11 @@ static int ngd_bulk_wr(struct slim_controller *ctrl, u8 la, u8 mt, u8 mc,
 		}
 		mutex_lock(&dev->tx_lock);
 	}
+
+	ret = ngd_check_hw_status(dev);
+	if (ret)
+		return ret;
+
 	if (dev->use_tx_msgqs != MSM_MSGQ_ENABLED) {
 		SLIM_WARN(dev, "bulk wr not supported");
 		ret = -EPROTONOSUPPORT;
@@ -827,8 +855,12 @@ static int ngd_bulk_wr(struct slim_controller *ctrl, u8 la, u8 mt, u8 mc,
 		}
 	}
 retpath:
-	if (ret)
+	if (ret) {
 		dev->bulk.in_progress = false;
+		dev->bulk.ctx = NULL;
+		dev->bulk.wr_dma = 0;
+		slim_reinit_tx_msgq(dev);
+	}
 	mutex_unlock(&dev->tx_lock);
 	msm_slim_put_ctrl(dev);
 	return ret;
@@ -1187,7 +1219,7 @@ static void ngd_slim_rx(struct msm_slim_ctrl *dev, u8 *buf)
 static int ngd_slim_power_up(struct msm_slim_ctrl *dev, bool mdm_restart)
 {
 	void __iomem *ngd;
-	int timeout, ret = 0;
+	int timeout, retries = 0, ret = 0;
 	enum msm_ctrl_state cur_state = dev->state;
 	u32 laddr;
 	u32 rx_msgq;
@@ -1205,13 +1237,20 @@ static int ngd_slim_power_up(struct msm_slim_ctrl *dev, bool mdm_restart)
 		}
 	}
 
+hw_init_retry:
+
 	/* No need to vote if contorller is not in low power mode */
 	if (!mdm_restart &&
 		(cur_state == MSM_CTRL_DOWN || cur_state == MSM_CTRL_ASLEEP)) {
 		ret = msm_slim_qmi_power_request(dev, true);
 		if (ret) {
-			SLIM_ERR(dev, "SLIM QMI power request failed:%d\n",
-					ret);
+			SLIM_ERR(dev, "SLIM QMI power request failed:%d retry .................. %d\n",
+					ret,retries);
+			msm_slim_qmi_power_request(dev, false);
+			if (retries < INIT_MX_RETRIES) {
+				retries++;
+				goto hw_init_retry;
+			}
 			return ret;
 		}
 	}
@@ -1253,6 +1292,7 @@ static int ngd_slim_power_up(struct msm_slim_ctrl *dev, bool mdm_restart)
 		dev->state = MSM_CTRL_DOWN;
 	}
 
+capability_retry:
 	/*
 	 * ADSP power collapse case (OR SSR), where HW was reset
 	 * BAM programming will happen when capability message is received
@@ -1273,7 +1313,12 @@ static int ngd_slim_power_up(struct msm_slim_ctrl *dev, bool mdm_restart)
 
 	timeout = wait_for_completion_timeout(&dev->reconf, HZ);
 	if (!timeout) {
-		SLIM_WARN(dev, "capability exchange timed-out\n");
+		SLIM_WARN(dev, "capability exchange timed-out ............................... %d \n", retries);
+		if (retries < INIT_MX_RETRIES) {
+			retries++;
+			goto capability_retry;
+		}
+		panic("Capability Timedout ");
 		return -ETIMEDOUT;
 	}
 	/* mutliple transactions waiting on slimbus to power up? */

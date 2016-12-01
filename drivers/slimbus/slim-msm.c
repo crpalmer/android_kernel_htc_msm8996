@@ -541,20 +541,17 @@ void msm_slim_tx_msg_return(struct msm_slim_ctrl *dev, int err)
 			dev->bulk.in_progress = false;
 			pm_runtime_mark_last_busy(dev->dev);
 			return;
+		} else if (addr < mem->phys_base || (addr > (mem->phys_base +
+				(MSM_TX_BUFS * SLIM_MSGQ_BUF_LEN)))) {
+			SLIM_WARN(dev, "BUF out of bounds:base:0x%pa, io:0x%pa", &mem->phys_base, &addr);
+			continue;
 		}
 		idx = (int) ((addr - mem->phys_base)
 			/ SLIM_MSGQ_BUF_LEN);
-		if (idx < MSM_TX_BUFS && dev->wr_comp[idx]) {
+		if (dev->wr_comp[idx]) {
 			struct completion *comp = dev->wr_comp[idx];
 			dev->wr_comp[idx] = NULL;
-			complete(comp);
-		} else if (idx >= MSM_TX_BUFS) {
-			SLIM_ERR(dev, "BUF out of bounds:base:0x%pa, io:0x%pa",
-					&mem->phys_base, &addr);
-			/* print BAM debug info for TX pipe */
-			sps_get_bam_debug_info(dev->bam.hdl, 93,
-						SPS_BAM_PIPE(4), 0, 2);
-			continue;
+	                complete(comp);
 		}
 		if (err) {
 			int i;

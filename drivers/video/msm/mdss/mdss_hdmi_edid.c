@@ -421,7 +421,7 @@ static ssize_t hdmi_edid_sysfs_rda_res_info_data(struct device *dev,
 
 	for (i = 0; i < no_of_elem; i++) {
 		ret = hdmi_get_supported_mode(&info,
-			&edid_ctrl->init_data.ds_data,
+			edid_ctrl->init_data.ds_data,
 			minfo->video_format);
 
 		if (edid_ctrl->edid_override &&

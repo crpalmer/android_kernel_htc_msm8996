@@ -610,7 +610,7 @@ static int voice_svc_release(struct inode *inode, struct file *file)
 	}
 
 	if (prtd->apr_q6_cvs != NULL) {
-		svc_name = VOICE_SVC_CVS_STR;
+		svc_name = VOICE_SVC_MVM_STR;
 		handle = &prtd->apr_q6_cvs;
 		ret = voice_svc_dereg(svc_name, handle);
 		if (ret)

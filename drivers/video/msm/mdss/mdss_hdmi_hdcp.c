@@ -497,8 +497,11 @@ static int hdmi_hdcp_authentication_part1(struct hdmi_hdcp_ctrl *hdcp_ctrl)
 		goto error;
 	}
 
-	DEV_INFO("%s: Before read An, stale_an=%d, timeout=%d, l0_status=0x%08x\n",
-	     __func__, stale_an, timeout_count, link0_status);
+	/*
+	 * In cases where An_ready bits had stale values, it would be
+	 * better to delay reading of An to avoid any potential of this
+	 * read being blocked
+	 */
 	if (stale_an) {
 		msleep(200);
 		stale_an = false;
@@ -511,7 +514,6 @@ static int hdmi_hdcp_authentication_part1(struct hdmi_hdcp_ctrl *hdcp_ctrl)
 	/* Read AKSV */
 	link0_aksv_0 = DSS_REG_R(io, HDMI_HDCP_RCVPORT_DATA3);
 	link0_aksv_1 = DSS_REG_R(io, HDMI_HDCP_RCVPORT_DATA4);
-	DEV_INFO("%s: An and Aksv read done\n", __func__);
 
 	/* Copy An and AKSV to byte arrays for transmission */
 	aksv[0] =  link0_aksv_0        & 0xFF;

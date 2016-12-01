@@ -55,6 +55,7 @@ static void check_dsi_ctrl_status(struct work_struct *work)
 
 	pdsi_status = container_of(to_delayed_work(work),
 		struct dsi_status_data, check_status);
+
 	if (!pdsi_status) {
 		pr_err("%s: DSI status data not available\n", __func__);
 		return;

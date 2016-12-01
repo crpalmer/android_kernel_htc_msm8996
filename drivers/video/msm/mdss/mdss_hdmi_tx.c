@@ -1639,7 +1639,7 @@ static u32 hdmi_tx_ddc_read(struct hdmi_tx_ddc_ctrl *ddc_ctrl,
 	}
 
 	do {
-		DEV_INFO("EDID: reading block(%d) with block-size=%d\n",
+		DEV_DBG("EDID: reading block(%d) with block-size=%d\n",
 				block, block_size);
 
 		for (i = 0; i < EDID_BLOCK_SIZE; i += block_size) {
@@ -2159,7 +2159,7 @@ static int hdmi_tx_check_capability(struct hdmi_tx_ctrl *hdmi_ctrl)
 		}
 	}
 
-	DEV_INFO("%s: Features <HDMI:%s, HDCP:%s>\n", __func__,
+	DEV_DBG("%s: Features <HDMI:%s, HDCP:%s>\n", __func__,
 		hdmi_disabled ? "OFF" : "ON", hdcp_disabled ? "OFF" : "ON");
 
 	if (hdmi_disabled) {
@@ -3097,7 +3097,6 @@ static int hdmi_tx_enable_power(struct hdmi_tx_ctrl *hdmi_ctrl,
 			power_data->num_vreg, 0);
 		hdmi_ctrl->power_data_enable[module] = false;
 	}
-	DEV_INFO("%s: %d, en=%d done\n", __func__, module, enable);
 
 	return rc;
 
@@ -3281,7 +3280,6 @@ static int hdmi_tx_set_mhl_max_pclk(struct platform_device *pdev, u32 max_val)
 		DEV_ERR("%s: invalid max pclk val\n", __func__);
 		return -EINVAL;
 	}
-	DEV_INFO("%s: %d\n", __func__, max_val);
 
 	return 0;
 }
@@ -3744,7 +3742,7 @@ static int hdmi_tx_power_on(struct mdss_panel_data *panel_data)
 
 	res_changed = hdmi_tx_set_video_fmt(hdmi_ctrl, panel_info);
 
-	DEV_INFO("%s: %dx%d%s\n", __func__,
+	DEV_DBG("%s: %dx%d%s\n", __func__,
 		panel_info->xres, panel_info->yres,
 		panel_info->cont_splash_enabled ? " (handoff underway)" : "");
 
@@ -3787,7 +3785,7 @@ end:
 
 	dss_reg_dump(io->base, io->len, "HDMI-ON: ", REG_DUMP);
 
-	DEV_INFO("%s: Tx: %s (%s mode)\n", __func__,
+	DEV_DBG("%s: Tx: %s (%s mode)\n", __func__,
 		hdmi_tx_is_controller_on(hdmi_ctrl) ? "ON" : "OFF" ,
 		hdmi_tx_is_dvi_mode(hdmi_ctrl) ? "DVI" : "HDMI");
 

@@ -978,8 +978,7 @@ static void mdss_mdp_cmd_readptr_done(void *arg)
 
 	vsync_time = ktime_get();
 	ctl->vsync_cnt++;
-	status = readl_relaxed(mdata->mdp_base + MDSS_REG_HW_INTR2_STATUS);
-	MDSS_XLOG(ctl->num, atomic_read(&ctx->koff_cnt), status);
+	MDSS_XLOG(ctl->num, atomic_read(&ctx->koff_cnt));
 	complete_all(&ctx->rdptr_done);
 
 	spin_lock(&ctx->clk_lock);
@@ -1817,14 +1816,10 @@ static int mdss_mdp_cmd_wait4pingpong(struct mdss_mdp_ctl *ctl, void *arg)
 				__func__,
 				ctl->num, rc, ctx->pp_timeout_report_cnt);
 		if (ctx->pp_timeout_report_cnt == 0) {
-			status = readl_relaxed(mdata->mdp_base +
-				MDSS_REG_HW_INTR2_STATUS);
-			pr_err("TE ISR status 0x%x\n", status);
-
 			MDSS_XLOG(0xbad);
 			MDSS_XLOG_TOUT_HANDLER("mdp", "dsi0_ctrl", "dsi0_phy",
 				"dsi1_ctrl", "dsi1_phy", "vbif", "vbif_nrt",
-				"dbg_bus", "vbif_dbg_bus");
+				"dbg_bus", "vbif_dbg_bus", "panic");
 		} else if (ctx->pp_timeout_report_cnt == MAX_RECOVERY_TRIALS) {
 			MDSS_XLOG(0xbad2);
 			MDSS_XLOG_TOUT_HANDLER("mdp", "dsi0_ctrl", "dsi0_phy",

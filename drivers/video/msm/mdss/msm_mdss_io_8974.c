@@ -1699,7 +1699,7 @@ static int mdss_dsi_ulps_config(struct mdss_dsi_ctrl_pdata *ctrl,
 		return 0;
 	}
 
-	
+	/* clock lane will always be programmed for ulps */
 	active_lanes = BIT(4);
 	/*
 	 * make a note of all active data lanes for which ulps entry/exit

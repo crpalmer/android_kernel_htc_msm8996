@@ -1562,7 +1562,6 @@ void mdss_fb_set_backlight(struct msm_fb_data_type *mfd, u32 bkl_lvl)
 		|| !mfd->allow_bl_update) && !IS_CALIB_MODE_BL(mfd)) ||
 		mfd->panel_info->cont_splash_enabled) {
 		mfd->unset_bl_level = bkl_lvl;
-		pr_info("defer backlight value %d\n", bkl_lvl);
 		return;
 	} else if (mdss_fb_is_power_on(mfd) && mfd->panel_info->panel_dead) {
 		mfd->unset_bl_level = mfd->bl_level;
@@ -3316,7 +3315,6 @@ int mdss_fb_atomic_commit(struct fb_info *info,
 	atomic_inc(&mfd->mdp_sync_pt_data.commit_cnt);
 	atomic_inc(&mfd->commits_pending);
 	atomic_inc(&mfd->kickoff_pending);
-	MDSS_XLOG(mfd->index, atomic_read(&mfd->commits_pending), atomic_read(&mfd->kickoff_pending));
 	wake_up_all(&mfd->commit_wait_q);
 	mutex_unlock(&mfd->mdp_sync_pt_data.sync_mutex);
 
@@ -3591,7 +3589,7 @@ static int __mdss_fb_display_thread(void *data)
 		if (kthread_should_stop())
 			break;
 
-		MDSS_XLOG(mfd->index, XLOG_FUNC_ENTRY, atomic_read(&mfd->commits_pending));
+		MDSS_XLOG(mfd->index, XLOG_FUNC_ENTRY);
 		ret = __mdss_fb_perform_commit(mfd);
 		MDSS_XLOG(mfd->index, XLOG_FUNC_EXIT);
 

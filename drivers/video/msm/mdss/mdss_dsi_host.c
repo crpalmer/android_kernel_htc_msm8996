@@ -2327,7 +2327,12 @@ static int mdss_dsi_mdp_busy_tout_check(struct mdss_dsi_ctrl_pdata *ctrl)
 	bool stop_hs_clk = false;
 	int tout = 1;
 
-	MDSS_XLOG(ctrl->ndx, ctrl->mdp_busy, current->pid, 0xbadf);
+	/*
+	 * two possible scenario:
+	 * 1) DSI_INTR_CMD_MDP_DONE set but isr not fired
+	 * 2) DSI_INTR_CMD_MDP_DONE set and cleared (isr fired)
+	 * but event_thread not wakeup
+	 */
 	mdss_dsi_clk_ctrl(ctrl, ctrl->dsi_clk_handle, MDSS_DSI_ALL_CLKS,
 			  MDSS_DSI_CLK_ON);
 	spin_lock_irqsave(&ctrl->mdp_lock, flag);
@@ -2388,20 +2393,11 @@ void mdss_dsi_cmd_mdp_busy(struct mdss_dsi_ctrl_pdata *ctrl)
 		spin_unlock_irqrestore(&ctrl->mdp_lock, flags);
 		if (!rc) {
 			if (mdss_dsi_mdp_busy_tout_check(ctrl)) {
-				u32 status;
-				struct mdss_data_type *mdata = mdss_mdp_get_mdata();
-
-				status = readl_relaxed(mdata->mdp_base + MDSS_REG_HW_INTR2_STATUS);
-				pr_err("%s: timeout error, TE ISR status=0x%x\n", __func__, status);
-				if (status & 0x1100000) {
-					MDSS_XLOG_TOUT_HANDLER("mdp", "dsi0_ctrl",
-						"dsi0_phy", "dsi1_ctrl", "dsi1_phy",
-						"vbif", "vbif_nrt", "dbg_bus",
-						"vbif_dbg_bus", "panic");
-				} else {
-					MDSS_XLOG_TOUT_HANDLER("mdp", "dsi0_ctrl",
-						"dsi0_phy", "dsi1_ctrl", "dsi1_phy");
-				}
+				pr_err("%s: timeout error\n", __func__);
+				MDSS_XLOG_TOUT_HANDLER("mdp", "dsi0_ctrl",
+					"dsi0_phy", "dsi1_ctrl", "dsi1_phy",
+					"vbif", "vbif_nrt", "dbg_bus",
+					"vbif_dbg_bus", "panic");
 			}
 		}
 	}
@@ -2484,6 +2480,7 @@ int mdss_dsi_cmdlist_commit(struct mdss_dsi_ctrl_pdata *ctrl, int from_mdp)
 
 	if (req && (req->flags & CMD_REQ_HS_MODE))
 		hs_req = true;
+
 	if ((!ctrl->burst_mode_enabled) || from_mdp) {
 		/* make sure dsi_cmd_mdp is idle */
 		mdss_dsi_cmd_mdp_busy(ctrl);

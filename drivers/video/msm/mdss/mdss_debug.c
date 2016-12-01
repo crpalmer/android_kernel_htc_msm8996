@@ -136,7 +136,7 @@ static ssize_t panel_debug_base_reg_write(struct file *file,
 	struct mdss_mdp_ctl *ctl;
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata;
 	struct dsi_cmd_desc dsi_write_cmd = {
-		{0, 1, 0, 0, 0, 0}, reg};
+		{0/*data type*/, 1, 0, 0, 0, 0/* len */}, reg};
 	struct dcs_cmd_req cmdreq;
 
 	if (!dbg || !mdata)
@@ -195,8 +195,7 @@ static ssize_t panel_debug_base_reg_read(struct file *file,
 			char __user *user_buf, size_t count, loff_t *ppos)
 {
 	struct mdss_debug_base *dbg = file->private_data;
-	u32 i, reg_buf_len = 0;
-	int len = 0;
+	u32 i, len = 0, reg_buf_len = 0;
 	char *panel_reg_buf, *rx_buf;
 	struct mdss_data_type *mdata = mdss_res;
 	struct mdss_mdp_ctl *ctl = mdata->ctl_off + 0;
@@ -218,13 +217,9 @@ static ssize_t panel_debug_base_reg_read(struct file *file,
 	reg_buf_len = (dbg->cnt * PANEL_REG_FORMAT_LEN)
 		    + PANEL_REG_ADDR_LEN + 1;
 	rx_buf = kzalloc(dbg->cnt, GFP_KERNEL);
-	if (!rx_buf) {
-		pr_err("not enough memory to hold panel reg dump\n");
-		return -ENOMEM;
-	}
-
 	panel_reg_buf = kzalloc(reg_buf_len, GFP_KERNEL);
-	if (!panel_reg_buf) {
+
+	if (!rx_buf || !panel_reg_buf) {
 		pr_err("not enough memory to hold panel reg dump\n");
 		rc = -ENOMEM;
 		goto read_reg_fail;

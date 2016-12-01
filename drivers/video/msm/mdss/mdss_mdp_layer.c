@@ -1350,11 +1350,11 @@ static int __validate_layers(struct msm_fb_data_type *mfd,
 	ret = __validate_secure_display(mdp5_data);
 
 validate_exit:
-	pr_debug("err=%d total_layer:%d left:%d right:%d release_ndx=0x%x processed=%d\n",
+	pr_debug("err=%d total_layer:%d left:%d right:%d release_ndx=0x%x destroy_ndx=0x%x processed=%d\n",
 		ret, layer_count, left_lm_layers, right_lm_layers,
-		release_ndx, i);
+		release_ndx, destroy_ndx, i);
 	MDSS_XLOG(inputndx, layer_count, left_lm_layers, right_lm_layers,
-		release_ndx, ret);
+		release_ndx, destroy_ndx, ret);
 	mutex_lock(&mdp5_data->list_lock);
 	list_for_each_entry_safe(pipe, tmp, &mdp5_data->pipes_used, list) {
 		if (IS_ERR_VALUE(ret)) {

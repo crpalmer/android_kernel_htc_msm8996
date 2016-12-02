@@ -41,11 +41,7 @@ static int snd_ctl_elem_list_compat(struct snd_card *card,
 
 	data = compat_alloc_user_space(sizeof(*data));
 
-	
-	if (data == NULL)
-		return -EFAULT;
-	
-	
+	/* offset, space, used, count */
 	if (copy_in_user(data, data32, 4 * sizeof(u32)))
 		return -EFAULT;
 	/* pids */
@@ -298,9 +294,8 @@ static int snd_ctl_elem_read_user_compat(struct snd_card *card,
 	if (data == NULL)
 		return -ENOMEM;
 
-	if ((err = copy_ctl_value_from_user(card, data, data32, &type, &count)) < 0) {
+	if ((err = copy_ctl_value_from_user(card, data, data32, &type, &count)) < 0)
 		goto error;
-	}
 
 	snd_power_lock(card);
 	err = snd_power_wait(card, SNDRV_CTL_POWER_D0);
@@ -325,9 +320,8 @@ static int snd_ctl_elem_write_user_compat(struct snd_ctl_file *file,
 	if (data == NULL)
 		return -ENOMEM;
 
-	if ((err = copy_ctl_value_from_user(card, data, data32, &type, &count)) < 0) {
+	if ((err = copy_ctl_value_from_user(card, data, data32, &type, &count)) < 0)
 		goto error;
-	}
 
 	snd_power_lock(card);
 	err = snd_power_wait(card, SNDRV_CTL_POWER_D0);

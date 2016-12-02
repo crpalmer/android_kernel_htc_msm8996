@@ -1455,10 +1455,6 @@ static int snd_microii_spdif_default_get(struct snd_kcontrol *kcontrol,
 
 	/* use known values for that card: interface#1 altsetting#1 */
 	iface = usb_ifnum_to_if(mixer->chip->dev, 1);
-	
-	if (iface == NULL)
-		goto end;
-	
 	alts = &iface->altsetting[1];
 	ep = get_endpoint(alts, 0)->bEndpointAddress;
 
